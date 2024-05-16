@@ -163,7 +163,7 @@ RouteData[opts:OptionsPattern[]] := Module[
 	] & /@ allRoutePositions;
 	
 	data = <|
-		"Length" -> length, 
+		"Length" -> wimpyTourLength, 
 		"Tour" -> wimpyTourPositions, 
 		"TravelDirections" -> allTravelDirections
 	|>
