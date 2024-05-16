@@ -118,7 +118,7 @@ Module[
 
 
 (* Makes tooltip for when hovering over a point *)
-makeToolTip[wimpyData_] := 
+makeToolTipData[wimpyData_] := 
  Text[Column[
    Prepend[wimpyData["Address"] // Values, 
     "Wimpy " <> wimpyData["Address"]["City"]]]]
@@ -155,6 +155,7 @@ RouteData[opts:OptionsPattern[]] := Module[
 	allTravelDirections = With[
 		{wimpyFrom = wimpyData[[#[[1]]]],wimpyTo = wimpyData[[#[[2]]]]},
 		<|
+			(* CONSIDER: This is a lazy implementation so that I don't have to go get the Id again *)
 			"From"-> GetWimpyById[wimpyFrom["Id"]],
 			"To" -> GetWimpyById[wimpyTo["Id"]],
 			"TravelDirections" -> TravelDirections[{wimpyFrom["GeoPosition"],wimpyTo["GeoPosition"]}]
@@ -221,7 +222,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 
 	markers = Tooltip[
 		GeoMarker[#GeoPosition, Graphics[{RGBColor["#d62e22"], Disk[]}], "Scale" -> 0.15], 
-		makeToolTip[#];
+		makeToolTipData[#]
 	] & /@ routeData["TravelDirections"][[All, "From"]];
 
 	(* CONSIDER: Having Options "StartPin" "EndPin" *)
@@ -236,7 +237,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	GeoGraphics[{travel, markers}, ImageSize -> Full]
 ]
 
-makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBColor["#d62e22"], Disk[]}](* , "Scale" -> 0.15 *), "Scale" -> Scaled[0.05]], makeToolTip[wimpy]]
+makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBColor["#d62e22"], Disk[]}](* , "Scale" -> 0.15 *), "Scale" -> Scaled[0.05]], makeToolTipData[wimpy]]
 makeTravelLine[travelDirections_] := Style[Line[travelDirections], Thick, Black]
 
 RouteMap[routeData_]:= Module[
