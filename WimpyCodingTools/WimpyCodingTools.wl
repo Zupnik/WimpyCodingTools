@@ -2,6 +2,8 @@
 
 BeginPackage["WimpyCodingTools`"]
 
+Get["WimpyCodingTools`ScheduledTask`"]
+
 $WimpyData::usage="WimpyData will call once per session to get the data from the Wimpy API"
 RouteData::usage="RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"
 TourData::usage="TourData[routeData]"
@@ -10,7 +12,7 @@ GetWimpyById::usage="GetWimpyById[Id]"
 GetNearestWimpy::usage="GetNearestWimpy[location]"
 RouteMap::usage="RouteMap[routeData]"
 RouteGrid::usage="Creates a slideshow of all travel directions"
-
+ImportWimpyData::usage="ImportWimpyData[x]"
 
 StyleOpeningTimes
 StyleWimpyData
@@ -60,13 +62,19 @@ getRawWimpyData[] := $RawWimpyData = URLRead[$WimpyAPIUrl]
 
 emptyOpeningTimes[] := <|# -> "Closed" & /@ $daysOfTheWeek|>;
 
-importWimpyData[rawWimpyData_] := Module[
-        {readLocationData = rawWimpyData, importedData},
-        importedData = Association @@@ ImportString[readLocationData["Body"], "JSON"];
+(* Exposed function *)
+ImportWimpyData[x_] := importWimpyData[x]
+
+importWimpyData[httpResponse_HTTPResponse]:=
+	importWimpyData[ImportString[httpResponse["Body"], "JSON"]]
+
+importWimpyData[importedData_] := Module[
+        {assoc},
+		assoc = Association @@@ importedData;
         Map[
 			<|
 				
-				"Id"->#["id"],
+				"Id"->Lookup[#,"id"],
 				(* 
 					This custom field gives the name of the Wimpy, as there are some in different locations,
 					This custom field 175278 in one instance does not give a value, so return the city
@@ -83,15 +91,20 @@ importWimpyData[rawWimpyData_] := Module[
 					"Postcode"->#["zip"]
 				|>
 			|>&,
-			importedData
+			assoc
 		]
     ]
 
 
 split[str_String] := ToExpression /@ StringSplit[str, {":", ","}];
 
+defaultWimpyOpeningTimes = <|# -><|"Open"->"Closed", "Close"->"Closed"|>|> & /@ WimpyCodingTools`Private`$daysOfTheWeek
 
-openingTimes[str_String]:=Map[{$dayKey[#[[1]]],TimeObject[#[[2;;3]]],TimeObject[#[[4;;5]]]}&,Partition[split[str],5]]
+(* opening times are in the form "1:9:30:15:00,2:9:00:17:00,3:9:00:17:00,4:9:00:17:00,5:9:00:17:00,6:9:00:17:00,7:9:00:17:00"*)
+openingTimes[str_String] := <|defaultWimpyOpeningTimes,Map[<|$dayKey[#[[1]]]-><|"Open"->TimeObject[#[[2;;3]]],"Close"->TimeObject[#[[4;;5]]]|>|>&,Partition[split[str],5]]|>
+
+(* converts to the legacy format for the opening times *)
+formatOpeningTimes[openingTimes_]:=List @@ AssociationMap[{#[[1]], #[[2, 1]], #[[2, 2]]} &, openingTimes]
 
 makeGeoPosition[x_Association]:=
 Module[
@@ -182,7 +195,7 @@ GetNearestWimpy[opts:OptionsPattern[]] := Module[
 ]
 
 (* TODO: Improve Interpretation *)
-StyleOpeningTimes[times_] := TextGrid[Prepend[times,{"Day","Open","Close"}],Frame->All]
+StyleOpeningTimes[times_] := TextGrid[Prepend[formatOpeningTimes[times],{"Day","Open","Close"}],Frame->All]
 (* StyleOpeningTimes[times_] := Interpretation[TextGrid[Prepend[times,{"Day","Open","Close"}],Frame->All],times] *)
 
 StyleWimpyData[wimpy_] := TextGrid[
