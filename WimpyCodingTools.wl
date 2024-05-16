@@ -211,6 +211,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 		makeToolTip[#];
 	] & /@ routeData["TravelDirections"][[All, "From"]];
 
+	(* CONSIDER: Having Options "StartPin" "EndPin" *)
 	If[
 		OptionValue["ShowSpecialMarkers"] === True,
 		markers[[1,1]] = ReplacePart[markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
@@ -274,17 +275,6 @@ StyleRouteData[assoc_]:=
 	}
 
 (* ResourceFunction["AddCodeCompletion"]["TourData"][{"Length", "Tour", "TravelDirections"}] *)
-
-(* Assets *)
-
-wimpyLogo = Import["/Users/anthonyz/Dropbox/projects/Wimpy2024/Images/Logo_of_Wimpy.svg", "Graphics"];
-
-(* TODO: Don't use ImageCrop as it converts it from a Graphics into an Image *)
-(*finishFlag = Import["/Users/anthonyz/Downloads/Pasted-20230905-124733.svg","Graphics"];
-finishFlag=ImageCrop[RemoveBackground[finishFlag]];
-
-startFlag=Import["/Users/anthonyz/Downloads/Pasted-20230905-132023.svg","Graphics"];
-startFlag=ImageCrop[RemoveBackground[startFlag]]*)
 
 yourNearestWimpy[]:=
 Module[
