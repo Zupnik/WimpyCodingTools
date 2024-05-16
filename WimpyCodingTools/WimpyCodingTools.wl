@@ -119,9 +119,10 @@ Module[
 
 (* Makes tooltip for when hovering over a point *)
 makeToolTipData[wimpyData_] := 
- Text[Column[
+Text[Column[
    Prepend[wimpyData["Address"] // Values, 
-    "Wimpy " <> wimpyData["Address"]["City"]]]]
+    "Wimpy " <> wimpyData["Address"]["City"]]]
+]
 
 
 Options[RouteData]:={"WimpyData" :> $WimpyData,"StartLocation" -> None}
@@ -171,17 +172,14 @@ RouteData[opts:OptionsPattern[]] := Module[
 
 Options[GetWimpyById]:={"WimpyData" :> $WimpyData}
 
-GetWimpyById[Id_, opts:OptionsPattern[]]:= Module[
+GetWimpyById[id_, opts:OptionsPattern[]]:= Module[
 	{wimpyData = OptionValue["WimpyData"], cases},
-	cases = Cases[wimpyData, x_Association /; x["Id"] === Id];
+	cases = Cases[wimpyData, x_Association /; x["id"] === Id];
 	(* *)
 	If[cases==={}, Return[Missing[]]];
 	(* Id should be unique and result should either be {} or a single value in a list *)
 	cases[[1]]
 ]
-
-
-
 
 Options[GetNearestWimpy] := {"Location" :> $GeoLocation, "WimpyData" :> $WimpyData}
 
