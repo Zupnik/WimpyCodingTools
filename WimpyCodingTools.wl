@@ -2,14 +2,14 @@
 
 BeginPackage["WimpyCodingTools`"]
 
-$WimpyData
-RouteData
-TourData
-WimpyTourGraphic
-GetWimpyById
-GetNearestWimpy
-RouteMap
-RouteGrid
+$WimpyData::usage="WimpyData will call once per session to get the data from the Wimpy API"
+RouteData::usage="RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"
+TourData::usage="TourData[routeData]"
+WimpyTourGraphic::usage="WimpyTourGraphic[routeData]"
+GetWimpyById::usage="GetWimpyById[Id]"
+GetNearestWimpy::usage="GetNearestWimpy[location]"
+RouteMap::usage="RouteMap[routeData]"
+RouteGrid::usage="Creates a slideshow of all travel directions"
 
 
 StyleOpeningTimes
@@ -17,18 +17,11 @@ StyleWimpyData
 
 Begin["`Private`"]
 
-
 $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 
-
 (* ::Text:: *)
-(*Only run once per session*)
-
-
-Clear[$WimpyData]
 
 (* Runs once per session *)
-(* $WimpyData := $WimpyData = importWimpyData[getRawWimpyData[]]  *)
 $WimpyData := Once[importWimpyData[getRawWimpyData[]]] 
 
 $daysOfTheWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", 
@@ -220,10 +213,10 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 
 	If[
 		OptionValue["ShowSpecialMarkers"] === True,
-		markers[[1,1]] = ReplacePart[Echo@markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
+		markers[[1,1]] = ReplacePart[markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
 		markers[[-1,1]] = ReplacePart[markers[[-1,1]], {2 -> $endPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
 	];
-	Echo@markers[[1]];
+	markers[[1]];
 	(* Travel lines for each Wimpy *)
 	travel = Style[Line[#], Thick, Black] & /@ (routeData["TravelDirections"][[All, "TravelDirections"]])[[1;;value]];
 	GeoGraphics[{travel, markers}, ImageSize -> Full]
