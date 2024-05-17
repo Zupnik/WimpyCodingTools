@@ -18,12 +18,12 @@ compareOpeningTimes[wimpy1_, wimpy2_] := Module[
 			Module[
                 {wimpy1Match, wimpy2Match},
 
-				wimpy1Match = Select[wimpyBefore,#["Id"]==id&][[1]];
-				wimpy2Match = Select[wimpyAfter,#["Id"]==id&][[1]];
+				wimpy1Match = Select[wimpyBefore,#["Id"]===id&][[1]];
+				wimpy2Match = Select[wimpyAfter,#["Id"]===id&][[1]];
 
 				If[
-					wimpy1Match["OpeningTimes"] == wimpy2Match["OpeningTimes"],
-					(* No change *)
+					wimpy1Match["OpeningTimes"] === wimpy2Match["OpeningTimes"],
+					(*No change *)
 					Nothing,
 					Grid[
                         {
