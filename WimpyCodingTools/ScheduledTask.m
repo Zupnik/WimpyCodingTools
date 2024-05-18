@@ -2,13 +2,22 @@ Package["WimpyCodingTools`"]
 
 PackageExport[WimpyDifferences]
 
+GeneralUtilities`SetUsage["WimpyDifferences[wimpyData1$, wimpyData2$] returns a list of differences between the two sets of wimpy data. The differences are returned as a list of associations with the keys 'WimpysDeleted' and 'WimpysAdded'"]
 
-(* WimpyDifferences::usage = "WimpyDifferences[wimpyData1, wimpyData2] returns a list of differences between the two sets of wimpy data. The differences are returned as a list of associations with the keys 'WimpysDeleted' and 'WimpysAdded'"; *)
+PackageExport[$ReportEmail]
+
+$ReportEmail = $CloudUserID
+
 
 (* Imported Symbols *)
 (* WimpyCodingTools`GetWimpyById
 WimpyCodingTools`$WimpyData *)
 
+(* CONSIDER: what if this has no value? Produces an error*)
+
+(*  TODO: Need to look at the Holiday times field as well 
+    Perhaps the holiday times should be put onto the Graphic
+*)
 WimpyDifferences[wimpyData1_, wimpyData2_] := Module[
     {wimpyRestaraunts, wimpyOpeningTimes, wimpysOpened, wimpysClosed, wimpysChanged},
     wimpysChanged = compareWimpyRestaraunts[wimpyData1, wimpyData2];
@@ -90,12 +99,55 @@ styleTimeChange[x_WimpyToken] := Row[{Style[DateString[x[[1]]],
 $WimpyChangeMonitorScheduledTask = CloudObject["Wimpy/WimpyChangeMonitorScheduledTask"];
 
 
-createScheduledTask[opts:OptionsPattern[]] :=  CloudDeploy[
-    runComparison[]
+PackageExport[InitializeWimpyChangeMonitor]
+GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor[] ."]
+
+
+InitializeWimpyChangeMonitor[] := iInitializeWimpyChangeMonitor[]
+
+iInitializeWimpyChangeMonitor[opts:OptionsPattern[]] :=  CloudDeploy[
+    ScheduledTask[
+        runComparison[];
+        (* Set new Data*)
+        CloudSymbol["Wimpy/$WimpyData"] = $WimpyData;
+        ,
+        {Tomorrow, "Daily"}
+    ]
     ,
     $WimpyChangeMonitorScheduledTask
 ]
 
+runComparison[] := Module[
+    {oldWimpyData, newWimpyData, co, email},
+    email = getEmail[];
+    If[FailureQ[email],
+        Return[email]
+    ];
 
-runComparison[]:=$WimpyData
+    co = CloudObject["Wimpy/WimpyReport/"<>DateString[Riffle[{"Year", "Month", "Day", "Report"}, "_"]]];
+    oldWimpyData = CloudSymbol["Wimpy/$WimpyData"];
+    newWimpyData = $WimpyData;
+    (* TODO: *)
+    CloudDeploy[
+        WimpyDifferences[oldWimpyData, newWimpyData],
+        co
+    ];
 
+    SendMail[email, co]
+]
+
+
+getEmail[] := Module[
+	{email},
+	email = Interpreter["EmailAddress"][$ReportEmail];
+	If[
+        FailureQ[email] || MissingQ[email],
+        Failure["InvalidEmail", <|
+            "MessageTemplate" -> 
+            "`email` is not a valid email. Check $ReportEmail", 
+            "MessageParameters" -> <|"email" -> $ReportEmail|>|>
+        ]
+        ,
+        Return[email]
+    ];
+]

@@ -23,12 +23,6 @@ GeneralUtilities`SetUsage["ImportWimpyData[x$]"]
 PackageExport[StyleOpeningTimes]
 PackageExport[StyleWimpyData]
 
-
-
-(* From other packages*)
-
-WimpyDifferences
-
 $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 
 (* ::Text:: *)
@@ -36,13 +30,10 @@ $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 (* Runs once per session *)
 $WimpyData := Once[importWimpyData[getRawWimpyData[]]] 
 
-
-
 $daysOfTheWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", 
       "Thursday", "Friday", "Saturday"};
 
-$dayKey = 
-  Association @@ 
+$dayKey = Association @@ 
    MapThread[
     Rule, {Range[7], {"Sunday", "Monday", "Tuesday", "Wednesday", 
       "Thursday", "Friday", "Saturday"}
@@ -110,7 +101,7 @@ importWimpyData[importedData_] := Module[
 
 split[str_String] := ToExpression /@ StringSplit[str, {":", ","}];
 
-defaultWimpyOpeningTimes = <|# -><|"Open"->"Closed", "Close"->"Closed"|>|> & /@ WimpyCodingTools`Private`$daysOfTheWeek
+defaultWimpyOpeningTimes = <|# -><|"Open"->"Closed", "Close"->"Closed"|>|> & /@ $daysOfTheWeek
 
 (* opening times are in the form "1:9:30:15:00,2:9:00:17:00,3:9:00:17:00,4:9:00:17:00,5:9:00:17:00,6:9:00:17:00,7:9:00:17:00"*)
 openingTimes[str_String] := <|defaultWimpyOpeningTimes,Map[<|$dayKey[#[[1]]]-><|"Open"->TimeObject[#[[2;;3]]],"Close"->TimeObject[#[[4;;5]]]|>|>&,Partition[split[str],5]]|>
