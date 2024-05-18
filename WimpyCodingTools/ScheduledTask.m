@@ -1,15 +1,13 @@
-BeginPackage["WimpyCodingTools`ScheduledTask`"]
+Package["WimpyCodingTools`"]
 
-Needs["WimpyCodingTools`"]
+PackageExport[WimpyDifferences]
 
-WimpyDifferences::usage = "WimpyDifferences[wimpyData1, wimpyData2] returns a list of differences between the two sets of wimpy data. The differences are returned as a list of associations with the keys 'WimpysDeleted' and 'WimpysAdded'";
+
+(* WimpyDifferences::usage = "WimpyDifferences[wimpyData1, wimpyData2] returns a list of differences between the two sets of wimpy data. The differences are returned as a list of associations with the keys 'WimpysDeleted' and 'WimpysAdded'"; *)
 
 (* Imported Symbols *)
-WimpyCodingTools`GetWimpyById
-WimpyCodingTools`$WimpyData
-
-
-Begin["`Private`"]
+(* WimpyCodingTools`GetWimpyById
+WimpyCodingTools`$WimpyData *)
 
 WimpyDifferences[wimpyData1_, wimpyData2_] := Module[
     {wimpyRestaraunts, wimpyOpeningTimes, wimpysOpened, wimpysClosed, wimpysChanged},
@@ -101,6 +99,3 @@ createScheduledTask[opts:OptionsPattern[]] :=  CloudDeploy[
 
 runComparison[]:=$WimpyData
 
-End[]
-
-EndPackage[]

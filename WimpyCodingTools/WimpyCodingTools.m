@@ -1,27 +1,33 @@
-(* ::Package:: *)
+Package["WimpyCodingTools`"]
 
-BeginPackage["WimpyCodingTools`"]
+PackageExport[$WimpyData]
+PackageExport[RouteData]
+PackageExport[TourData]
+PackageExport[WimpyTourGraphic]
+PackageExport[GetWimpyById]
+PackageExport[GetNearestWimpy]
+PackageExport[RouteMap]
+PackageExport[RouteGrid]
+PackageExport[ImportWimpyData]
 
-Needs["WimpyCodingTools`ScheduledTask`"]
+GeneralUtilities`SetUsage["$WimpyData will call once per session to get the data from the Wimpy API"]
+GeneralUtilities`SetUsage["RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"]
+GeneralUtilities`SetUsage["TourData[routeData$] does stuff"]
+GeneralUtilities`SetUsage["WimpyTourGraphic[routeData$]"]
+GeneralUtilities`SetUsage["GetWimpyById[Id$] returns the Wimpy data for the given Id$"]
+GeneralUtilities`SetUsage["GetNearestWimpy[location$]"]
+GeneralUtilities`SetUsage["RouteMap[routeData$]"]
+GeneralUtilities`SetUsage["RouteGrid Creates a slideshow of all travel directions"]
+GeneralUtilities`SetUsage["ImportWimpyData[x$]"]
 
-$WimpyData::usage="WimpyData will call once per session to get the data from the Wimpy API"
-RouteData::usage="RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"
-TourData::usage="TourData[routeData]"
-WimpyTourGraphic::usage="WimpyTourGraphic[routeData]"
-GetWimpyById::usage="GetWimpyById[Id]"
-GetNearestWimpy::usage="GetNearestWimpy[location]"
-RouteMap::usage="RouteMap[routeData]"
-RouteGrid::usage="Creates a slideshow of all travel directions"
-ImportWimpyData::usage="ImportWimpyData[x]"
+PackageExport[StyleOpeningTimes]
+PackageExport[StyleWimpyData]
 
-StyleOpeningTimes
-StyleWimpyData
+
 
 (* From other packages*)
 
 WimpyDifferences
-
-Begin["`Private`"]
 
 $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 
@@ -29,6 +35,8 @@ $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 
 (* Runs once per session *)
 $WimpyData := Once[importWimpyData[getRawWimpyData[]]] 
+
+
 
 $daysOfTheWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", 
       "Thursday", "Friday", "Saturday"};
@@ -298,13 +306,3 @@ Module[
     nearest =  Nearest[allGeoData, Here];
     GeoGraphics[{GeoMarker[nearest[[1]]],GeoMarker[Here]}]
 ]
-
-
-
-(* ::Subtitle:: *)
-(*Scheduled Task*)
-
-
-End[]
-
-EndPackage[]
