@@ -2,7 +2,7 @@
 
 BeginPackage["WimpyCodingTools`"]
 
-Get["WimpyCodingTools`ScheduledTask`"]
+Needs["WimpyCodingTools`ScheduledTask`"]
 
 $WimpyData::usage="WimpyData will call once per session to get the data from the Wimpy API"
 RouteData::usage="RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"
@@ -16,6 +16,10 @@ ImportWimpyData::usage="ImportWimpyData[x]"
 
 StyleOpeningTimes
 StyleWimpyData
+
+(* From other packages*)
+
+WimpyDifferences
 
 Begin["`Private`"]
 
@@ -174,7 +178,7 @@ Options[GetWimpyById]:={"WimpyData" :> $WimpyData}
 
 GetWimpyById[id_, opts:OptionsPattern[]]:= Module[
 	{wimpyData = OptionValue["WimpyData"], cases},
-	cases = Cases[wimpyData, x_Association /; x["id"] === Id];
+	cases = Cases[wimpyData, x_Association /; x["Id"] === id];
 	(* *)
 	If[cases==={}, Return[Missing[]]];
 	(* Id should be unique and result should either be {} or a single value in a list *)

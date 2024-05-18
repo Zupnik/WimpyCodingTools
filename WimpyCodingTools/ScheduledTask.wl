@@ -1,6 +1,34 @@
 BeginPackage["WimpyCodingTools`ScheduledTask`"]
 
+Needs["WimpyCodingTools`"]
+
+WimpyDifferences::usage = "WimpyDifferences[wimpyData1, wimpyData2] returns a list of differences between the two sets of wimpy data. The differences are returned as a list of associations with the keys 'WimpysDeleted' and 'WimpysAdded'";
+
+(* Imported Symbols *)
+WimpyCodingTools`GetWimpyById
+WimpyCodingTools`$WimpyData
+
+
 Begin["`Private`"]
+
+WimpyDifferences[wimpyData1_, wimpyData2_] := Module[
+    {wimpyRestaraunts, wimpyOpeningTimes, wimpysOpened, wimpysClosed, wimpysChanged},
+    wimpysChanged = compareWimpyRestaraunts[wimpyData1, wimpyData2];
+    wimpysOpened = wimpysChanged["wimpysAdded"];
+    wimpysClosed = wimpysChanged["WimpysDeleted"];
+    
+    (* wimpyRestaraunts = compareWimpyRestaraunts[wimpyData1, wimpyData2];
+    wimpyOpeningTimes = compareOpeningTimes[wimpyData1, wimpyData2]; *)
+    Grid[{
+        {"Wimpys Opened!", GetWimpyById[#,"WimpyData" -> wimpyData2]["Name"]&/@wimpysOpened},
+        (* Note: If a Wimpy has closed, the Id has to be taken from the old data and not the new *)
+        {"Wimpys Closed!", GetWimpyById[#,"WimpyData" -> wimpyData1]["Name"]&/@wimpysClosed},
+        {SlideView[compareOpeningTimes[wimpyData1, wimpyData2]], SpanFromLeft}
+        }
+    ]
+]
+
+
 
 (* Returns any Wimpys which have been deleted or added  *)
 compareWimpyRestaraunts[wimpyData1_, wimpyData2_] := Module[
@@ -18,8 +46,8 @@ compareOpeningTimes[wimpy1_, wimpy2_] := Module[
 			Module[
                 {wimpy1Match, wimpy2Match},
 
-				wimpy1Match = Select[wimpyBefore,#["Id"]===id&][[1]];
-				wimpy2Match = Select[wimpyAfter,#["Id"]===id&][[1]];
+				wimpy1Match = Select[wimpyBefore,#["Id"] === id&][[1]];
+				wimpy2Match = Select[wimpyAfter,#["Id"] === id&][[1]];
 
 				If[
 					wimpy1Match["OpeningTimes"] === wimpy2Match["OpeningTimes"],
@@ -27,11 +55,11 @@ compareOpeningTimes[wimpy1_, wimpy2_] := Module[
 					Nothing,
 					Grid[
                         {
-                            {"Wimpy "<>id,SpanFromLeft},
-                            {"Before","After"},
+                            {"Wimpy "<> WimpyCodingTools`GetWimpyById[id]["Name"]},
                             {
-                                ds1 = Dataset[wimpyBefore][Select[#Id === id&], "OpeningTimes"],
-                                ds2 = Dataset[wimpyAfter][Select[#Id === id&], "OpeningTimes"]
+                                Dataset[Merge[{wimpy1Match["OpeningTimes"], wimpy2Match["OpeningTimes"]}, mergeOpeningTimes[#[[1]],#[[2]]]&]]
+                                (* ds1 = Dataset[wimpy1Match["OpeningTimes"]],
+                                ds2 = Dataset[wimpy2Match["OpeningTimes"]] *)
                             }
                         }
                     ]
@@ -50,7 +78,7 @@ mergeOpeningTimes[time1:<|"Open" -> open1_, "Close" -> close1_|>, time:<|"Open" 
 
 tokenizeTimeDifference[bef_, aft_] := If[
 	bef === aft,
-	bef,
+	DateString[bef],
 	WimpyToken[bef, aft]
 ]/. x_WimpyToken :> styleTimeChange[x]
 
@@ -59,6 +87,19 @@ styleTimeChange[x_WimpyToken] := Row[{Style[DateString[x[[1]]],
    Background -> LightRed], " ", 
   Style[DateString[x[[2]]], 
    Background -> LightGreen]}]
+
+
+$WimpyChangeMonitorScheduledTask = CloudObject["Wimpy/WimpyChangeMonitorScheduledTask"];
+
+
+createScheduledTask[opts:OptionsPattern[]] :=  CloudDeploy[
+    runComparison[]
+    ,
+    $WimpyChangeMonitorScheduledTask
+]
+
+
+runComparison[]:=$WimpyData
 
 End[]
 
