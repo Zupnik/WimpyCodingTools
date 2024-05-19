@@ -100,7 +100,7 @@ $WimpyChangeMonitorScheduledTask = CloudObject["Wimpy/WimpyChangeMonitorSchedule
 
 
 PackageExport[InitializeWimpyChangeMonitor]
-GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor[] ."]
+GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor deploys a CloudObject which runs a scheduled task to compare the current Wimpy data with the previous day's data. The differences are then emailed to the email address in $ReportEmail. The scheduled task runs daily by default."]
 
 
 InitializeWimpyChangeMonitor[] := iInitializeWimpyChangeMonitor[]
