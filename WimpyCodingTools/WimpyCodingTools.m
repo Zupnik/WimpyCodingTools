@@ -2,6 +2,8 @@ Package["WimpyCodingTools`"]
 
 PackageExport[$WimpyData]
 PackageExport[RouteData]
+
+PackageExport[CreateRouteData]
 PackageExport[TourData]
 PackageExport[WimpyTourGraphic]
 PackageExport[GetWimpyById]
@@ -11,7 +13,7 @@ PackageExport[RouteGrid]
 PackageExport[ImportWimpyData]
 
 GeneralUtilities`SetUsage["$WimpyData will call once per session to get the data from the Wimpy API"]
-GeneralUtilities`SetUsage["RouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"]
+GeneralUtilities`SetUsage["CreateRouteData gets all the route data of your Wimpy tour, and with the option \"StartLocation\" you can specify where you want to start"]
 GeneralUtilities`SetUsage["TourData[routeData$] does stuff"]
 GeneralUtilities`SetUsage["WimpyTourGraphic[routeData$]"]
 GeneralUtilities`SetUsage["GetWimpyById[Id$] returns the Wimpy data for the given Id$"]
@@ -34,11 +36,7 @@ $WimpyData := Once[importWimpyData[getRawWimpyData[]]]
 $daysOfTheWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", 
       "Thursday", "Friday", "Saturday"};
 
-$dayKey = Association @@ 
-   MapThread[
-    Rule, {Range[7], {"Sunday", "Monday", "Tuesday", "Wednesday", 
-      "Thursday", "Friday", "Saturday"}
-     }];
+$dayKey = Association @@ MapThread[Rule, {Range[7], $daysOfTheWeek}];
 
 markerText[text_] := 
  Style[text, Black, Bold, FontSize -> Scaled[0.4], 
@@ -69,8 +67,7 @@ emptyOpeningTimes[] := <|# -> "Closed" & /@ $daysOfTheWeek|>;
 (* Exposed function *)
 ImportWimpyData[x_] := importWimpyData[x]
 
-importWimpyData[httpResponse_HTTPResponse]:=
-	importWimpyData[ImportString[httpResponse["Body"], "JSON"]]
+importWimpyData[resp_HTTPResponse] := importWimpyData[importJson[resp]]
 
 importWimpyData[importedData_] := Module[
         {assoc},
@@ -98,6 +95,8 @@ importWimpyData[importedData_] := Module[
 			assoc
 		]
     ]
+
+importJson[resp_HTTPResponse] := ImportString[resp["Body"], "JSON"];
 
 
 split[str_String] := ToExpression /@ StringSplit[str, {":", ","}];
@@ -129,10 +128,10 @@ Text[Column[
 ]
 
 
-Options[RouteData]:={"WimpyData" :> $WimpyData,"StartLocation" -> None}
+Options[CreateRouteData]:={"WimpyData" :> $WimpyData,"StartLocation" -> None}
 
 
-RouteData[opts:OptionsPattern[]] := Module[
+CreateRouteData[opts:OptionsPattern[]] := Module[
 	{wimpyData = OptionValue["WimpyData"],
 		wimpyTourLength, allGeoData, wimpyTourPositions, allRoutes, allRoutes2, allGeoRoutes, allTravelDirections,
 		nearest = OptionValue["StartLocation"], data
@@ -167,12 +166,18 @@ RouteData[opts:OptionsPattern[]] := Module[
 		|>
 	] & /@ allRoutePositions;
 	
-	data = <|
+	data = RouteData[<|
 		"Length" -> wimpyTourLength, 
 		"Tour" -> wimpyTourPositions, 
 		"TravelDirections" -> allTravelDirections
-	|>
+	|>]
 ]
+
+(* TODO: Make route data a nice box *)
+RouteData[x_]["Properties"] := x // Keys
+
+RouteData[x_][y_] := x[y]
+
 
 Options[GetWimpyById]:={"WimpyData" :> $WimpyData}
 
@@ -215,6 +220,8 @@ Options[WimpyTourGraphic] = Join[Options[GeoGraphics],{
 	"ShowSpecialMarkers" -> False,
 	"Dynamic" -> False
 }]
+
+
 
 WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
