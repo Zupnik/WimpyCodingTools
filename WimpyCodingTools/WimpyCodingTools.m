@@ -28,6 +28,7 @@ $WimpyAPIUrl = "https://wimpy.uk.com/api/locations?all=true";
 (* ::Text:: *)
 
 (* Runs once per session *)
+(* CONSIDER: Should this be a Dataset? *)
 $WimpyData := Once[importWimpyData[getRawWimpyData[]]] 
 
 $daysOfTheWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", 
@@ -209,10 +210,14 @@ StyleWimpyData[wimpy_] := TextGrid[
 }
 ]
 
-Options[WimpyTourGraphic] = {"CompleteRoute" -> True, "ShowSpecialMarkers" -> False}
+Options[WimpyTourGraphic] = Join[Options[GeoGraphics],{
+	"CompleteRoute" -> True, 
+	"ShowSpecialMarkers" -> False,
+	"Dynamic" -> False
+}]
 
 WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
-	{markers, completeRoute = OptionValue["CompleteRoute"], value},
+	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
 	(* Markers for each Wimpy *)
 
 	value = If[
@@ -222,7 +227,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	];
 
 	markers = Tooltip[
-		GeoMarker[#GeoPosition, Graphics[{RGBColor["#d62e22"], Disk[]}], "Scale" -> 0.15], 
+		GeoMarker[#GeoPosition, Graphics[{RGBColor["#d62e22"], Disk[]}], "Scale" -> 0.02], 
 		makeToolTipData[#]
 	] & /@ routeData["TravelDirections"][[All, "From"]];
 
@@ -235,7 +240,14 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	markers[[1]];
 	(* Travel lines for each Wimpy *)
 	travel = Style[Line[#], Thick, Black] & /@ (routeData["TravelDirections"][[All, "TravelDirections"]])[[1;;value]];
-	GeoGraphics[{travel, markers}, ImageSize -> Full]
+	head = If[OptionValue["Dynamic"] === True,
+		DynamicGeoGraphics,
+		GeoGraphics
+	];
+
+	head[{travel, markers}, ImageSize -> Full,
+		Sequence @@ FilterRules[{opts}, Options[GeoGraphics]]
+	]
 ]
 
 makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBColor["#d62e22"], Disk[]}](* , "Scale" -> 0.15 *), "Scale" -> Scaled[0.05]], makeToolTipData[wimpy]]

@@ -8,7 +8,6 @@ PackageExport[$ReportEmail]
 
 $ReportEmail = $CloudUserID
 
-
 (* Imported Symbols *)
 (* WimpyCodingTools`GetWimpyById
 WimpyCodingTools`$WimpyData *)
@@ -103,18 +102,23 @@ PackageExport[InitializeWimpyChangeMonitor]
 GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor deploys a CloudObject which runs a scheduled task to compare the current Wimpy data with the previous day's data. The differences are then emailed to the email address in $ReportEmail. The scheduled task runs daily by default."]
 
 
+Options[InitializeWimpyChangeMonitor] = {
+    "ScheduledTask" -> $WimpyChangeMonitorScheduledTask,
+    "CloudSymbol" -> CloudSymbol["Wimpy/$WimpyData"]
+}
+
 InitializeWimpyChangeMonitor[] := iInitializeWimpyChangeMonitor[]
 
 iInitializeWimpyChangeMonitor[opts:OptionsPattern[]] :=  CloudDeploy[
     ScheduledTask[
         runComparison[];
         (* Set new Data*)
-        CloudSymbol["Wimpy/$WimpyData"] = $WimpyData;
+        OptionValue["CloudSymbol"] = $WimpyData;
         ,
         {Tomorrow, "Daily"}
     ]
     ,
-    $WimpyChangeMonitorScheduledTask
+    OptionValue["ScheduledTask"]
 ]
 
 runComparison[] := Module[
