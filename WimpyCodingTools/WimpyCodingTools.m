@@ -128,8 +128,7 @@ Text[Column[
 ]
 
 
-Options[CreateRouteData]:={"WimpyData" :> $WimpyData,"StartLocation" -> None}
-
+Options[CreateRouteData] := {"WimpyData" :> $WimpyData, "StartLocation" -> None}
 
 CreateRouteData[opts:OptionsPattern[]] := Module[
 	{wimpyData = OptionValue["WimpyData"],
@@ -148,9 +147,10 @@ CreateRouteData[opts:OptionsPattern[]] := Module[
 		nearest =!= None,
 		(* Check to see if nearest is a location? *)
 		Module[
-			{cloestWimpy = GetNearestWimpy["Location"->nearest], pos },
+			{closestWimpy = GetNearestWimpy["Location" -> nearest], pos },
 
-			pos = Position[allRoutePositions,Select[allRoutePositions,(wimpyData[[#[[1]]]]["GeoPosition"] === cloestWimpy["GeoPosition"])&][[1]]][[1]];
+			pos = Position[allRoutePositions, Select[allRoutePositions, (wimpyData[[#[[1]]]]["GeoPosition"] === closestWimpy["GeoPosition"])&][[1]]][[1]];
+			wimpyTourPositions = RotateLeft[wimpyTourPositions, pos - 1];
 			(* Make it so that the first value in the result will be the place closest to nearest *)
 			allRoutePositions = RotateLeft[allRoutePositions, pos - 1];
 		]
@@ -169,6 +169,8 @@ CreateRouteData[opts:OptionsPattern[]] := Module[
 	data = RouteData[<|
 		"Length" -> wimpyTourLength, 
 		"Tour" -> wimpyTourPositions, 
+		"WimpysById" -> ((wimpyData[[#]]["Id"]&)/@wimpyTourPositions),
+		"Routes" -> Map[wimpyData[[#]]["Id"] &, allRoutePositions, {2}],
 		"TravelDirections" -> allTravelDirections
 	|>]
 ]
@@ -188,6 +190,25 @@ GetWimpyById[id_, opts:OptionsPattern[]]:= Module[
 	If[cases==={}, Return[Missing[]]];
 	(* Id should be unique and result should either be {} or a single value in a list *)
 	cases[[1]]
+]
+
+PackageExport[GetGeoData]
+Options[GetGetData] := {"WimpyData" :> $WimpyData}
+GetGeoData[fromId_,toId_] := Module[{wimpyData = OptionValue["WimpyData"], wimpyFrom = GetWimpyById[fromId], wimpyTo = GetWimpyById[toId], wimpyFromGeo, wimpyToGeo, td, geoPositions}, 
+	{wimpyFrom, wimpyTo};
+	wimpyFromGeo = wimpyFrom["GeoPosition"];
+	wimpyToGeo = wimpyTo["GeoPosition"];
+	td = TravelDirections[{wimpyFromGeo, wimpyToGeo}];
+	geoPositions = GeoPosition /@ Flatten[td["TravelPath"][[1, 1]], 1];
+	<|
+		"From" -> wimpyFromGeo,
+		"To" -> wimpyToGeo,
+		"TravelDirections" -> td,
+		"AllGeoPositions" -> GeoPosition /@ Flatten[td["TravelPath"][[1, 1]], 1],
+		"AllGeoPaths" -> Table[GeoPath[{geoPositions[[i]], geoPositions[[i + 1]]}], {i, Length[geoPositions] - 1}]
+	|>
+	
+
 ]
 
 Options[GetNearestWimpy] := {"Location" :> $GeoLocation, "WimpyData" :> $WimpyData}
@@ -220,8 +241,6 @@ Options[WimpyTourGraphic] = Join[Options[GeoGraphics],{
 	"ShowSpecialMarkers" -> False,
 	"Dynamic" -> False
 }]
-
-
 
 WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
