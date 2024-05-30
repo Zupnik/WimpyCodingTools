@@ -236,16 +236,16 @@ StyleWimpyData[wimpy_] := TextGrid[
 }
 ]
 
-Options[WimpyTourGraphic] = Join[Options[GeoGraphics],{
+Options[WimpyTourGraphic] = {
 	"CompleteRoute" -> True, 
 	"ShowSpecialMarkers" -> False,
 	"Dynamic" -> False
-}]
+}
 
-WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
+WimpyTourGraphic[routeData_, opts:OptionsPattern[],geoOpts:OptionsPattern[GeoGraphics]]:=Module[
 	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
+	
 	(* Markers for each Wimpy *)
-
 	value = If[
 		completeRoute === True,
 		-1,
@@ -253,15 +253,15 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	];
 
 	markers = Tooltip[
-		GeoMarker[#GeoPosition, Graphics[{RGBColor["#d62e22"], Disk[]}], "Scale" -> 0.02], 
+		GeoMarker[#GeoPosition, Graphics[{RGBColor["#d62e22"], Disk[]}], "Scale" -> Scaled[0.02]], 
 		makeToolTipData[#]
 	] & /@ routeData["TravelDirections"][[All, "From"]];
 
 	(* CONSIDER: Having Options "StartPin" "EndPin" *)
 	If[
 		OptionValue["ShowSpecialMarkers"] === True,
-		markers[[1,1]] = ReplacePart[markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
-		markers[[-1,1]] = ReplacePart[markers[[-1,1]], {2 -> $endPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> 0.15]}];
+		markers[[1,1]] = ReplacePart[markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> Scaled[0.05]]}];
+		markers[[-1,1]] = ReplacePart[markers[[-1,1]], {2 -> $endPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> Scaled[0.05]]}];
 	];
 	markers[[1]];
 	(* Travel lines for each Wimpy *)
@@ -272,7 +272,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]]:=Module[
 	];
 
 	head[{travel, markers}, ImageSize -> Full,
-		Sequence @@ FilterRules[{opts}, Options[GeoGraphics]]
+		geoOpts
 	]
 ]
 
