@@ -128,15 +128,23 @@ Text[Column[
 ]
 
 
-Options[CreateRouteData] := {"WimpyData" :> $WimpyData, "StartLocation" -> None}
+(* TODO: Have a better option for "Reverse". It would be better if they could choose to go anticlockwise or clockwise, 
+	not have to look how the data is created first *)
+Options[CreateRouteData] := {"WimpyData" :> $WimpyData, "StartLocation" -> None, "Reverse" -> False}
 
 CreateRouteData[opts:OptionsPattern[]] := Module[
 	{wimpyData = OptionValue["WimpyData"],
 		wimpyTourLength, allGeoData, wimpyTourPositions, allRoutes, allRoutes2, allGeoRoutes, allTravelDirections,
-		nearest = OptionValue["StartLocation"], data
+		nearest = OptionValue["StartLocation"], data, reverse = OptionValue["Reverse"]
 	},
 	allGeoData = wimpyData[[All, "GeoPosition"]];
 	{wimpyTourLength, wimpyTourPositions} = FindShortestTour[allGeoData];
+	(* Reverse the direction of travel in case you want to do tour the other way around *)
+	If[
+		reverse === True,
+		wimpyTourPositions = (wimpyTourPositions // Reverse)
+	];
+
 	(* TODO: Better description of what this does. Makes some skeletal structure to get route layout easier *)
 	allRoutes = NestList[# + 1 &, {1, 2}, Length[wimpyTourPositions] - 2];
 	(* Positions of routes *)
@@ -242,7 +250,7 @@ Options[WimpyTourGraphic] = {
 	"Dynamic" -> False
 }
 
-WimpyTourGraphic[routeData_, opts:OptionsPattern[],geoOpts:OptionsPattern[GeoGraphics]]:=Module[
+WimpyTourGraphic[routeData_, opts:OptionsPattern[], geoOpts:OptionsPattern[GeoGraphics]]:=Module[
 	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
 	
 	(* Markers for each Wimpy *)
