@@ -8,7 +8,6 @@ PackageExport[TourData]
 PackageExport[WimpyTourGraphic]
 PackageExport[GetWimpyById]
 PackageExport[GetNearestWimpy]
-PackageExport[RouteMap]
 PackageExport[RouteGrid]
 PackageExport[ImportWimpyData]
 
@@ -18,7 +17,6 @@ GeneralUtilities`SetUsage["TourData[routeData$] does stuff"]
 GeneralUtilities`SetUsage["WimpyTourGraphic[routeData$]"]
 GeneralUtilities`SetUsage["GetWimpyById[Id$] returns the Wimpy data for the given Id$"]
 GeneralUtilities`SetUsage["GetNearestWimpy[location$]"]
-GeneralUtilities`SetUsage["RouteMap[routeData$]"]
 GeneralUtilities`SetUsage["RouteGrid Creates a slideshow of all travel directions"]
 GeneralUtilities`SetUsage["ImportWimpyData[x$]"]
 
@@ -98,7 +96,6 @@ importWimpyData[importedData_] := Module[
 
 importJson[resp_HTTPResponse] := ImportString[resp["Body"], "JSON"];
 
-
 split[str_String] := ToExpression /@ StringSplit[str, {":", ","}];
 
 defaultWimpyOpeningTimes = <|# -><|"Open"->"Closed", "Close"->"Closed"|>|> & /@ $daysOfTheWeek
@@ -126,7 +123,6 @@ Text[Column[
    Prepend[wimpyData["Address"] // Values, 
     "Wimpy " <> wimpyData["Address"]["City"]]]
 ]
-
 
 (* TODO: Have a better option for "Reverse". It would be better if they could choose to go anticlockwise or clockwise, 
 	not have to look how the data is created first *)
@@ -236,12 +232,12 @@ StyleOpeningTimes[times_] := TextGrid[Prepend[formatOpeningTimes[times],{"Day","
 (* StyleOpeningTimes[times_] := Interpretation[TextGrid[Prepend[times,{"Day","Open","Close"}],Frame->All],times] *)
 
 StyleWimpyData[wimpy_] := TextGrid[
-{
-	{"Id:",wimpy["Id"]},
-	{"Name:",wimpy["Name"]},
-	{"Postcode:",wimpy["Address","Postcode"]},
-	{Pane[#, ImageSize -> 270] &@StyleOpeningTimes[wimpy["OpeningTimes"]],SpanFromLeft}
-}
+	{
+		{"Id:", wimpy["Id"]},
+		{"Name:", wimpy["Name"]},
+		{"Postcode:", wimpy["Address","Postcode"]},
+		{Pane[#, ImageSize -> 270] &@StyleOpeningTimes[wimpy["OpeningTimes"]],SpanFromLeft}
+	}
 ]
 
 Options[WimpyTourGraphic] = {
@@ -250,9 +246,8 @@ Options[WimpyTourGraphic] = {
 	"Dynamic" -> False
 }
 
-WimpyTourGraphic[routeData_, opts:OptionsPattern[], geoOpts:OptionsPattern[GeoGraphics]]:=Module[
+WimpyTourGraphic[routeData_, opts:OptionsPattern[]] := Module[
 	{markers, completeRoute = OptionValue["CompleteRoute"], value, head},
-	
 	(* Markers for each Wimpy *)
 	value = If[
 		completeRoute === True,
@@ -271,7 +266,7 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[], geoOpts:OptionsPattern[GeoGr
 		markers[[1,1]] = ReplacePart[markers[[1,1]], {2 -> $startPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> Scaled[0.05]]}];
 		markers[[-1,1]] = ReplacePart[markers[[-1,1]], {2 -> $endPin, 3 -> Sequence["Alignment" -> Bottom, "Scale" -> Scaled[0.05]]}];
 	];
-	markers[[1]];
+	
 	(* Travel lines for each Wimpy *)
 	travel = Style[Line[#], Thick, Black] & /@ (routeData["TravelDirections"][[All, "TravelDirections"]])[[1;;value]];
 	head = If[OptionValue["Dynamic"] === True,
@@ -280,30 +275,12 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[], geoOpts:OptionsPattern[GeoGr
 	];
 
 	head[{travel, markers}, ImageSize -> Full,
-		geoOpts
+		Sequence @@ FilterRules[{opts}, Options[GeoGraphics]]
 	]
 ]
 
 makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBColor["#d62e22"], Disk[]}](* , "Scale" -> 0.15 *), "Scale" -> Scaled[0.05]], makeToolTipData[wimpy]]
 makeTravelLine[travelDirections_] := Style[Line[travelDirections], Thick, Black]
-
-RouteMap[routeData_]:= Module[
-	{data},
-	(* Sort to put GeoMarkers on top*)
-	data = Sort@Flatten[
-			Map[
-			{
-				
-				makeTravelLine[#["TravelDirections"]],
-				makeGeoMarker[#["From"]]
-			}&
-			,
-			routeData["TravelDirections"]
-		]
-	];
-
-	GeoGraphics[data]
-]
 
 RouteGrid[routeData_]:= Module[
 	{},
@@ -329,17 +306,8 @@ StyleGeoGraphic[travel_]:=Grid[{
 }]
 
 StyleRouteData[assoc_]:=
-	(* Headers*)
 	TextGrid@{
+		(* Headers *)
 		{"Graphic","From","To"},
-		{assoc["GeoGraphic"],assoc["OpeningTimesFrom"],assoc["OpeningTimesTo"]}
+		{assoc["GeoGraphic"], assoc["OpeningTimesFrom"], assoc["OpeningTimesTo"]}
 	}
-
-(* ResourceFunction["AddCodeCompletion"]["TourData"][{"Length", "Tour", "TravelDirections"}] *)
-
-yourNearestWimpy[]:=
-Module[
-    {allGeoData = $wimpyData[[All, "GeoPosition"]], nearest},
-    nearest =  Nearest[allGeoData, Here];
-    GeoGraphics[{GeoMarker[nearest[[1]]],GeoMarker[Here]}]
-]
