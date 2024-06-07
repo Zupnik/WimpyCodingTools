@@ -7,6 +7,8 @@ GeneralUtilities`SetUsage["WimpyDifferences[wimpyData1$, wimpyData2$] returns a 
 PackageExport[$ReportEmail]
 
 $ReportEmail = $CloudUserID
+$ReportTemplateLocation := FileNameJoin[{PacletObject["WimpyCodingTools"]["Location"], "Resources", "WimpyReportTemplate.nb"}]
+
 
 (*
     NOTES:
@@ -147,7 +149,7 @@ iInitializeWimpyChangeMonitor[opts:OptionsPattern[]] :=  CloudDeploy[
 ]
 
 runComparison[] := Module[
-    {oldWimpyData, newWimpyData, co, email},
+    {oldWimpyData, newWimpyData, co, email, runTaskQ, differences},
     email = getEmail[];
     If[FailureQ[email],
         Return[email]
@@ -157,13 +159,26 @@ runComparison[] := Module[
     oldWimpyData = CloudSymbol["Wimpy/$WimpyData"];
     newWimpyData = $WimpyData;
     (* TODO: *)
-    CloudDeploy[
-        WimpyDifferences[oldWimpyData, newWimpyData],
-        co,
-        IncludeDefinitions -> False
-    ];
-
-    SendMail[email, co]
+    differences = WimpyDifferences[oldWimpyData, newWimpyData];
+    runTaskQ = !AllTrue[Values[differences], {} === # &];
+    If[
+        $CloudEvaluation
+        ,
+        If[
+            runTaskQ,
+            (* Only make the report *)
+            GenerateDocument[$ReportTemplateLocation, differences, co];
+            SendMail[email, co]
+            ,
+            SendMail[email, "No Changes to Wimpys today!"]
+        ]
+        ,
+        (* If you want to run comparison locally *)
+        GenerateDocument[$ReportTemplateLocation, differences]
+    ]
+    
+    
+    
 ]
 
 
