@@ -1,0 +1,210 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      7022,        202]
+NotebookOptionsPosition[      5475,        162]
+NotebookOutlinePosition[      6124,        185]
+CellTagsIndexPosition[      6081,        182]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[{
+ "Wimpy Report ",
+ Cell[BoxData[
+  TemplateBox[{
+    RowBox[{"DateString", "[", "\"ISODate\"", "]"}], "General", TextData},
+   "NotebookTemplateExpression"]],ExpressionUUID->
+  "9bdeb5db-5958-4817-90e2-d8f8c048a1bb"]
+}], "Title",
+ CellChangeTimes->{{3.926746423276965*^9, 3.9267464330224733`*^9}, {
+  3.92674648440448*^9, 
+  3.9267464844045486`*^9}},ExpressionUUID->"e64a4e65-2fa2-48fc-91ff-\
+e66c05e58437"],
+
+Cell[CellGroupData[{
+
+Cell["Recently Opened Wimpys", "Subtitle",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellGroupingRules->{"GroupTogetherGrouping", 10000.},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{
+        RowBox[{
+          RowBox[{"Length", "[", 
+            
+            TemplateBox[{"\"WimpysOpened\"", "Null", "Named", BoxData}, 
+             "NotebookTemplateSlot"], "]"}], ">", "0"}], 
+        "NotebookTemplateExpression"}, "NotebookConditionalBlock"]]]}},
+ CellChangeTimes->{{3.9267466950535707`*^9, 3.9267467065432873`*^9}, 
+   3.926746891376192*^9, 3.926748634296391*^9, {3.9267515863794527`*^9, 
+   3.926751588197003*^9}},ExpressionUUID->"7e25fc4e-b069-4101-8973-\
+d1a41ab86ef5"],
+
+Cell[TextData[Cell[BoxData[
+ TemplateBox[{"\"Name\"", "\"Name\"", "Named", TextData},
+  "NotebookTemplateSlot"]],ExpressionUUID->"54a0013a-47d5-4649-832b-\
+bc3bfa9703a8"]], "Text",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellGroupingRules->{"GroupTogetherGrouping", 10000.},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{"\"WimpysOpened\"", "NotebookTemplateSlot", True, False}, 
+       "NotebookRepeatingBlock"]]]}},
+ CellChangeTimes->{{3.926747149660301*^9, 3.926747153897595*^9}, 
+   3.926748634296954*^9, {3.926751541687994*^9, 
+   3.9267515668507023`*^9}},ExpressionUUID->"d943570a-c562-4483-9c5a-\
+8f8877ce407c"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Recently Closed Wimpys", "Subtitle",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{
+        RowBox[{
+          RowBox[{"Length", "[", 
+            
+            TemplateBox[{"\"WimpysClosed\"", "Null", "Named", BoxData}, 
+             "NotebookTemplateSlot"], "]"}], ">", "0"}], 
+        "NotebookTemplateExpression"}, "NotebookConditionalBlock"]]]}},
+ CellChangeTimes->{{3.926746700551929*^9, 3.92674670239456*^9}, {
+  3.9267515898886766`*^9, 
+  3.926751590216247*^9}},ExpressionUUID->"d68941c6-0887-4220-95d5-\
+8e64a055a215"],
+
+Cell[TextData[Cell[BoxData[
+ TemplateBox[{"\"Name\"", "\"Name\"", "Named", TextData},
+  "NotebookTemplateSlot"]],ExpressionUUID->"b7e5e0e0-3c41-47f7-b987-\
+0247661f283a"]], "Text",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{"\"WimpysClosed\"", "NotebookTemplateSlot", True, False}, 
+       "NotebookRepeatingBlock"]]]}},
+ CellChangeTimes->{{3.926747155632743*^9, 3.9267471569637957`*^9}, 
+   3.926751569714262*^9},ExpressionUUID->"2d8a2634-f975-47fc-88fa-\
+eead025f057f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Changed Opening Times", "Subtitle",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{
+        RowBox[{
+          RowBox[{"Length", "[", 
+            
+            TemplateBox[{"\"OpeningTimes\"", "Null", "Named", BoxData}, 
+             "NotebookTemplateSlot"], "]"}], ">", "0"}], 
+        "NotebookTemplateExpression"}, "NotebookConditionalBlock"]]]}},
+ CellChangeTimes->{{3.926747161532421*^9, 
+  3.926747175583913*^9}},ExpressionUUID->"e81d234b-f6f6-4d3a-9af3-\
+e4867e3739f3"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[Cell[BoxData[
+ TemplateBox[{"\"WimpyName\"", "\"WimpyName\"", "Named", TextData},
+  "NotebookTemplateSlot"]],ExpressionUUID->"e0f3e15d-04e3-4797-b3d1-\
+09d0a9bb71e5"]], "Section",
+ CellBracketOptions->{"Color"->RGBColor[0.1574, 0.8708, 1.],
+ "Thickness"->2},
+ CellFrameLabels->{{None, None}, {None, 
+    Cell[
+     BoxData[
+      TemplateBox[{"\"OpeningTimes\"", "NotebookTemplateSlot", True, False}, 
+       "NotebookRepeatingBlock"]]]}},
+ CellChangeTimes->{{3.926747161532421*^9, 3.926747175583913*^9}, {
+  3.9267486810985947`*^9, 
+  3.9267486898891706`*^9}},ExpressionUUID->"566b47a2-3ab4-4ec8-95a2-\
+688c87d0d8e3"],
+
+Cell[BoxData[
+ TemplateBox[{"\"Changes\"", "\"Changes\"", "Named", BoxData},
+  "NotebookTemplateSlot"]], "Input",
+ CellFrameLabels->{{
+    Cell[
+     BoxData[
+      TemplateBox[{"Unevaluated"}, "NotebookTemplateCellBehavior"]]], None}, {
+   None, None}},
+ CellChangeTimes->{{3.9267487004004374`*^9, 
+  3.926748712221838*^9}},ExpressionUUID->"96eae7a8-fb0a-4176-8f63-\
+71f6fe2e8bb3"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{864, 1051},
+WindowMargins->{{Automatic, 0}, {Automatic, 0}},
+DockedCells->FEPrivate`FrontEndResource[
+ "NotebookTemplatingExpressions", "AuthoringDockedCell"],
+TaggingRules->{
+ "NotebookTemplateVersion" -> 2., "NotebookTemplate" -> True, 
+  "GeneratedNotebookOptions" -> {}},
+CellContext->Notebook,
+ShowCellTags->True,
+FrontEndVersion->"14.1 for Mac OS X ARM (64-bit) (June 3, 2024)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"8b10170f-5069-467a-9038-56f0efd6d953"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[576, 22, 423, 11, 109, "Title",ExpressionUUID->"e64a4e65-2fa2-48fc-91ff-e66c05e58437"],
+Cell[CellGroupData[{
+Cell[1024, 37, 755, 17, 106, "Subtitle",ExpressionUUID->"7e25fc4e-b069-4101-8973-d1a41ab86ef5",
+ CellGroupingRules->{"GroupTogetherGrouping", 10000.}],
+Cell[1782, 56, 696, 15, 96, "Text",ExpressionUUID->"d943570a-c562-4483-9c5a-8f8877ce407c",
+ CellGroupingRules->{"GroupTogetherGrouping", 10000.}]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2515, 76, 649, 16, 106, "Subtitle",ExpressionUUID->"d68941c6-0887-4220-95d5-8e64a055a215"],
+Cell[3167, 94, 591, 13, 96, "Text",ExpressionUUID->"2d8a2634-f975-47fc-88fa-eead025f057f"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3795, 112, 598, 15, 106, "Subtitle",ExpressionUUID->"e81d234b-f6f6-4d3a-9af3-e4867e3739f3"],
+Cell[CellGroupData[{
+Cell[4418, 131, 632, 14, 131, "Section",ExpressionUUID->"566b47a2-3ab4-4ec8-95a2-688c87d0d8e3"],
+Cell[5053, 147, 382, 10, 37, "Input",ExpressionUUID->"96eae7a8-fb0a-4176-8f63-71f6fe2e8bb3"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

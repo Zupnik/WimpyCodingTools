@@ -8,6 +8,17 @@ PackageExport[$ReportEmail]
 
 $ReportEmail = $CloudUserID
 
+(*
+    NOTES:
+    To get the ScheduledTask to work in the Cloud, you need to install WimpyCodingTools. You can do this by getting the latest:
+    ResourceFunction["GitHubInstall"]["Zupnik", "WimpyCodingTools"]
+
+    Or if you aren't using a .paclet file you need to add something like this to the init.m:
+    PacletDirectoryLoad[FileNameJoin[{Directory[],"/Wimpy/WimpyCodingTools/"}]];
+    Needs["WimpyCodingTools`"]
+
+*)
+
 (* Imported Symbols *)
 (* WimpyCodingTools`GetWimpyById
 WimpyCodingTools`$WimpyData *)
@@ -17,23 +28,33 @@ WimpyCodingTools`$WimpyData *)
 (*  TODO: Need to look at the Holiday times field as well 
     Perhaps the holiday times should be put onto the Graphic
 *)
+(* NOTE: wimpyData1 should be the older data of the two, should probably rename this.    *)
 WimpyDifferences[wimpyData1_, wimpyData2_] := Module[
     {wimpyRestaraunts, wimpyOpeningTimes, wimpysOpened, wimpysClosed, wimpysChanged},
     wimpysChanged = compareWimpyRestaraunts[wimpyData1, wimpyData2];
     wimpysOpened = wimpysChanged["wimpysAdded"];
     wimpysClosed = wimpysChanged["WimpysDeleted"];
     
+    <|
+        "WimpysClosed"->
+            (<|"Id"->#,"Name"->GetWimpyById[#, "WimpyData" :> wimpyData1]["Name"]|>&/@wimpysClosed), 
+        "WimpysOpened" -> 
+           (<|"Id"->#, "Name"->GetWimpyById[#, "WimpyData" :> wimpyData2]["Name"]|>&/@wimpysOpened),
+        "OpeningTimes" -> 
+            compareOpeningTimes[wimpyData1, wimpyData2]
+    |>
     (* wimpyRestaraunts = compareWimpyRestaraunts[wimpyData1, wimpyData2];
     wimpyOpeningTimes = compareOpeningTimes[wimpyData1, wimpyData2]; *)
-    Grid[{
+    
+    (* Grid[{
         {"Wimpys Opened!", GetWimpyById[#,"WimpyData" -> wimpyData2]["Name"]&/@wimpysOpened},
         (* Note: If a Wimpy has closed, the Id has to be taken from the old data and not the new *)
         {"Wimpys Closed!", GetWimpyById[#,"WimpyData" -> wimpyData1]["Name"]&/@wimpysClosed},
-        {SlideView[compareOpeningTimes[wimpyData1, wimpyData2]], SpanFromLeft}
+        {
+            SlideView[compareOpeningTimes[wimpyData1, wimpyData2]], SpanFromLeft}
         }
-    ]
+    ] *)
 ]
-
 
 
 (* Returns any Wimpys which have been deleted or added  *)
@@ -59,7 +80,11 @@ compareOpeningTimes[wimpy1_, wimpy2_] := Module[
 					wimpy1Match["OpeningTimes"] === wimpy2Match["OpeningTimes"],
 					(*No change *)
 					Nothing,
-					Grid[
+                    <|
+                        "WimpyId"->id, "WimpyName" -> WimpyCodingTools`GetWimpyById[id]["Name"],
+                        "Changes"-> Dataset[Merge[{wimpy1Match["OpeningTimes"], wimpy2Match["OpeningTimes"]}, mergeOpeningTimes[#[[1]],#[[2]]]&]]
+                    |>
+					(* Grid[
                         {
                             {"Wimpy "<> WimpyCodingTools`GetWimpyById[id]["Name"]},
                             {
@@ -68,7 +93,7 @@ compareOpeningTimes[wimpy1_, wimpy2_] := Module[
                                 ds2 = Dataset[wimpy2Match["OpeningTimes"]] *)
                             }
                         }
-                    ]
+                    ] *)
 				]
 			]
 		]
@@ -134,7 +159,8 @@ runComparison[] := Module[
     (* TODO: *)
     CloudDeploy[
         WimpyDifferences[oldWimpyData, newWimpyData],
-        co
+        co,
+        IncludeDefinitions -> False
     ];
 
     SendMail[email, co]
