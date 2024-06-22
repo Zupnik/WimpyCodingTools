@@ -6,7 +6,7 @@
 
 Paclet[
     Name -> "WimpyCodingTools",
-    Version -> "0.0.3",
+    Version -> "0.0.4",
     MathematicaVersion -> "14.0+",
     Extensions -> 
         {
