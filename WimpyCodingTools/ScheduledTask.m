@@ -159,7 +159,7 @@ runComparison[] := Module[
     oldWimpyData = CloudSymbol["Wimpy/$WimpyData"];
     newWimpyData = $WimpyData;
     (* TODO: *)
-    differences = Echo@WimpyDifferences[oldWimpyData, newWimpyData];
+    differences = WimpyDifferences[oldWimpyData, newWimpyData];
     runTaskQ = !AllTrue[Values[differences], {} === # &];
     
     If[
@@ -169,7 +169,10 @@ runComparison[] := Module[
             runTaskQ,
             (* Only make the report *)
             co = CloudObject["Wimpy/WimpyReport/"<>DateString[Riffle[{"Year", "Month", "Day", "Report"}, "_"]]];
-            GenerateDocument[$ReportTemplateLocation, differences, co];
+            (* Using Headless mode as I'm not sure that ScheduledTask can work with FrontEnd. I've tried UsingFrontEnd with no success *)
+            doc = GenerateDocument[$ReportTemplateLocation, differences, "HeadlessMode" -> True];
+            
+            CloudDeploy[doc, co];
             SendMail[email, co]
             ,
             SendMail[email, "No Changes to Wimpys today!"]
