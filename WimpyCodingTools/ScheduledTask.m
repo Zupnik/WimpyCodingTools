@@ -122,6 +122,7 @@ styleTimeChange[x_WimpyToken] := Row[{Style[DateString[x[[1]]],
    Background -> LightGreen]}]
 
 
+PackageExport[$WimpyChangeMonitorScheduledTask]
 $WimpyChangeMonitorScheduledTask = CloudObject["Wimpy/WimpyChangeMonitorScheduledTask"];
 
 
@@ -129,12 +130,12 @@ PackageExport[InitializeWimpyChangeMonitor]
 GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor deploys a CloudObject which runs a scheduled task to compare the current Wimpy data with the previous day's data. The differences are then emailed to the email address in $ReportEmail. The scheduled task runs daily by default."]
 
 
-Options[InitializeWimpyChangeMonitor] = {
+Options[InitializeWimpyChangeMonitor] = Options[iInitializeWimpyChangeMonitor] = {
     "ScheduledTask" -> $WimpyChangeMonitorScheduledTask,
     "CloudSymbol" -> CloudSymbol["Wimpy/$WimpyData"]
 }
 
-InitializeWimpyChangeMonitor[] := iInitializeWimpyChangeMonitor[]
+InitializeWimpyChangeMonitor[opts:OptionsPattern[]] := iInitializeWimpyChangeMonitor[opts]
 
 iInitializeWimpyChangeMonitor[opts:OptionsPattern[]] :=  CloudDeploy[
     ScheduledTask[
@@ -155,18 +156,19 @@ runComparison[] := Module[
         Return[email]
     ];
 
-    co = CloudObject["Wimpy/WimpyReport/"<>DateString[Riffle[{"Year", "Month", "Day", "Report"}, "_"]]];
     oldWimpyData = CloudSymbol["Wimpy/$WimpyData"];
     newWimpyData = $WimpyData;
     (* TODO: *)
-    differences = WimpyDifferences[oldWimpyData, newWimpyData];
+    differences = Echo@WimpyDifferences[oldWimpyData, newWimpyData];
     runTaskQ = !AllTrue[Values[differences], {} === # &];
+    
     If[
         $CloudEvaluation
         ,
         If[
             runTaskQ,
             (* Only make the report *)
+            co = CloudObject["Wimpy/WimpyReport/"<>DateString[Riffle[{"Year", "Month", "Day", "Report"}, "_"]]];
             GenerateDocument[$ReportTemplateLocation, differences, co];
             SendMail[email, co]
             ,
