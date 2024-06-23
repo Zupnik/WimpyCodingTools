@@ -3,7 +3,8 @@ Package["WimpyCodingTools`"]
 PackageExport[MakeNutritionalData]
 PackageExport[DeployNutritionalData]
 
-$PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf";
+$PDFLocation = "https://wimpy-uk.s3-eu-west-2.amazonaws.com/static/Nutrition%20Guide.pdf";
+(* $PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf"; *)
 $NutritionalDataCloudObject = CloudObject["Wimpy/WimpyData/NutritionalData.m"];
 
 MakeNutritionalData[] := Module[
@@ -79,5 +80,4 @@ UpdateMenuCloudSymbol[]:= CloudSymbol["Wimpy/$Menu"] = CloudSymbol["Wimpy/$Nutri
 PackageExport[ForceUpdateMenuAndNutritionalCloudSymbols]
 ForceUpdateMenuAndNutritionalCloudSymbols[]:=(UpdateNutritionalDataCloudSymbol[];UpdateMenuCloudSymbol[])
 
-
-PackageExport[DeployWimpyCode]
+    
