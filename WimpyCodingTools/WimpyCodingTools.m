@@ -19,6 +19,8 @@ GeneralUtilities`SetUsage["GetWimpyById[Id$] returns the Wimpy data for the give
 GeneralUtilities`SetUsage["GetNearestWimpy[location$]"]
 GeneralUtilities`SetUsage["RouteGrid Creates a slideshow of all travel directions"]
 GeneralUtilities`SetUsage["ImportWimpyData[x$]"]
+GeneralUtilities`SetUsage["DeployWimpyCodingTools[] copies the paclet to $PacletDeploymentDirectory"]
+
 
 PackageExport[StyleOpeningTimes]
 PackageExport[StyleWimpyData]
@@ -311,3 +313,10 @@ StyleRouteData[assoc_]:=
 		{"Graphic","From","To"},
 		{assoc["GeoGraphic"], assoc["OpeningTimesFrom"], assoc["OpeningTimesTo"]}
 	}
+
+PackageExport[DeployWimpyCodingTools]
+
+$PacletDeploymentDirectory = CloudObject["Wimpy/WimpyCodingTools"]
+$PacletDirectory = FileNameDrop[$InputFileName]
+
+DeployWimpyCodingTools[] := CopyDirectory[$PacletDirectory, $PacletDeploymentDirectory]
