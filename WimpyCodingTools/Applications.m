@@ -1,13 +1,42 @@
 Package["WimpyCodingTools`"]
 
-PackageExport[RegisterWimpyDataFormFunction]
+
+
 
 
 
 $Tiers = {"S", "A", "B", "C", "D", "E", "F"}
 
-$allWimpyMenuItems := CloudSymbol["Wimpy/$NutritionalData"][[All, "Name"]]
+$allWimpyMenuItems := CloudSymbol["Wimpy/$NutritionalData"] // Keys
 $allWimpyNames := $WimpyData[[All, "Name"]]
+
+$WimpyDataFormCloudObject = CloudObject["Wimpy/Deployments/WimpyVisitForm"]
+$WimpyNutritionalFormCloudObject = CloudObject["Wimpy/Deployments/WimpyNutritionalForm"]
+
+
+PackageExport[RegisterWimpyNutritionFormFunction]
+
+RegisterWimpyNutritionFormFunction[] := Module[
+    {menuItems = $allWimpyMenuItems},
+    (* TODO: Add Failure check*)
+    CloudDeploy[
+        FormFunction[
+            {
+                "MenuItems" -> RepeatingElement[menuItems,{1,Infinity}]
+            },
+            Module[
+                {meal, mealWithTotal},
+                meal = menuItems[#MenuItems];
+                mealWithTotal=Append[meal,<|"Total"->Normal[meal[Total]]|>];
+                ExportForm[mealWithTotal,"PNG"]
+            ]&
+        ],
+        $WimpyNutritionalFormCloudObject,
+        Permissions -> "Public"
+    ]
+]
+
+PackageExport[RegisterWimpyDataFormFunction]
 
 RegisterWimpyDataFormFunction[] := Module[
     {allWimpyNames, allWimpyMenuItems},
@@ -48,14 +77,13 @@ RegisterWimpyDataFormFunction[] := Module[
                 AppendTo[CloudSymbol["Wimpy/WimpyTourData"], data]
             ]&
         ],
-        "Wimpy/Deployments/RegisterWimpyData"
+        $WimpyDataFormCloudObject
     ]
 ]
 
 (* TODO: Wimpy Info Cloud Object *)
 
 PackageExport[TierListGenerator]
-
 
 TierListGenerator[tiers_List, tierData:{__Association}] := Module[
 	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"],imageSize={100,100}},
