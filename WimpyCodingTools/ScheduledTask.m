@@ -132,7 +132,7 @@ GeneralUtilities`SetUsage["InitializeWimpyChangeMonitor deploys a CloudObject wh
 
 Options[InitializeWimpyChangeMonitor] = Options[iInitializeWimpyChangeMonitor] = {
     "ScheduledTask" -> $WimpyChangeMonitorScheduledTask,
-    "CloudSymbol" -> CloudSymbol["Wimpy/$WimpyData"]
+    "CloudSymbol" :> "Wimpy/$WimpyData"
 }
 
 InitializeWimpyChangeMonitor[opts:OptionsPattern[]] := iInitializeWimpyChangeMonitor[opts]
@@ -141,7 +141,7 @@ iInitializeWimpyChangeMonitor[opts:OptionsPattern[]] :=  CloudDeploy[
     ScheduledTask[
         runComparison[];
         (* Set new Data*)
-        OptionValue["CloudSymbol"] = $WimpyData;
+        CloudSymbol[OptionValue["CloudSymbol"]] = $WimpyData;
         ,
         {Tomorrow, "Daily"}
     ]
@@ -181,11 +181,7 @@ runComparison[] := Module[
         (* If you want to run comparison locally *)
         GenerateDocument[$ReportTemplateLocation, differences]
     ]
-    
-    
-    
 ]
-
 
 getEmail[] := Module[
 	{email},
