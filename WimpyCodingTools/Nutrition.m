@@ -60,11 +60,9 @@ DeployNutritionalData[] := Module[{file = $NutritionalDataCloudObject},
                 "co"-> file,
                 "code" -> With[{file =  file}, Hold[DeleteFile[file]]]|>|>]
         ,
-        CloudExport[MakeNutritionalData[],{"WL", "Package"}, file];
+        CloudExport[MakeNutritionalData[], {"WL", "Package"}, file];
         UpdateNutritionalDataCloudSymbol[];
         UpdateMenuCloudSymbol[];
-
-        
     ]
 ]
 

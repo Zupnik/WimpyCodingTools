@@ -75,7 +75,7 @@ importWimpyData[importedData_] := Module[
         Map[
 			<|
 				
-				"Id"->Lookup[#,"id"],
+				"Id" -> Lookup[#,"id"],
 				(* 
 					This custom field gives the name of the Wimpy, as there are some in different locations,
 					This custom field 175278 in one instance does not give a value, so return the city
@@ -83,13 +83,13 @@ importWimpyData[importedData_] := Module[
 				"Name"->With[{cust=Lookup[#["customFields"], "175278"]},
 						If[MissingQ[cust], #["city"],cust]
 					],
-				"OpeningTimes"->openingTimes[#["hours"]],
-				"GeoPosition"->makeGeoPosition[#],
-				"Address"-><|
-					"Street"->#["address"],
-					"City"->#["city"],
-					"County"->#["state"],
-					"Postcode"->#["zip"]
+				"OpeningTimes" -> openingTimes[#["hours"]],
+				"GeoPosition" -> makeGeoPosition[#],
+				"Address" -> <|
+					"Street" -> #["address"],
+					"City" -> #["city"],
+					"County" -> #["state"],
+					"Postcode "-> #["zip"]
 				|>
 			|>&,
 			assoc
@@ -100,7 +100,7 @@ importJson[resp_HTTPResponse] := ImportString[resp["Body"], "JSON"];
 
 split[str_String] := ToExpression /@ StringSplit[str, {":", ","}];
 
-defaultWimpyOpeningTimes = <|# -><|"Open"->"Closed", "Close"->"Closed"|>|> & /@ $daysOfTheWeek
+defaultWimpyOpeningTimes = <|# -><|"Open" -> "Closed", "Close" -> "Closed"|>|> & /@ $daysOfTheWeek
 
 (* opening times are in the form "1:9:30:15:00,2:9:00:17:00,3:9:00:17:00,4:9:00:17:00,5:9:00:17:00,6:9:00:17:00,7:9:00:17:00"*)
 openingTimes[str_String] := <|defaultWimpyOpeningTimes,Map[<|$dayKey[#[[1]]]-><|"Open"->TimeObject[#[[2;;3]]],"Close"->TimeObject[#[[4;;5]]]|>|>&,Partition[split[str],5]]|>
@@ -163,7 +163,7 @@ CreateRouteData[opts:OptionsPattern[]] := Module[
 	];
 
 	allTravelDirections = With[
-		{wimpyFrom = wimpyData[[#[[1]]]],wimpyTo = wimpyData[[#[[2]]]]},
+		{wimpyFrom = wimpyData[[#[[1]]]], wimpyTo = wimpyData[[#[[2]]]]},
 		<|
 			(* CONSIDER: This is a lazy implementation so that I don't have to go get the Id again *)
 			"From"-> GetWimpyById[wimpyFrom["Id"]],
@@ -187,7 +187,7 @@ RouteData[x_]["Properties"] := x // Keys
 RouteData[x_][y_] := x[y]
 
 
-Options[GetWimpyById]:={"WimpyData" :> $WimpyData}
+Options[GetWimpyById] := {"WimpyData" :> $WimpyData}
 
 GetWimpyById[id_, opts:OptionsPattern[]]:= Module[
 	{wimpyData = OptionValue["WimpyData"], cases},
@@ -280,6 +280,10 @@ WimpyTourGraphic[routeData_, opts:OptionsPattern[]] := Module[
 		Sequence @@ FilterRules[{opts}, Options[GeoGraphics]]
 	]
 ]
+
+(* Convinience function which will need refactoring. Makes *)
+WimpyTourGraphicalInformation[routeData_, opts:OptionsPattern[]]:=1
+
 
 makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBColor["#d62e22"], Disk[]}](* , "Scale" -> 0.15 *), "Scale" -> Scaled[0.05]], makeToolTipData[wimpy]]
 makeTravelLine[travelDirections_] := Style[Line[travelDirections], Thick, Black]
