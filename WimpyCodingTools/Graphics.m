@@ -2,7 +2,7 @@ Package["WimpyCodingTools`"]
 
 PackageExport[CreateSVGData]
 CreateSVGData[routeData_]:= Module[
-    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags,idsToAttach},
+    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags,idsToAttach, obj, droppedFirstLine, fullyBuiltXML},
     graphicsToProcess = seperateGraphics[routeData];
 
     (* we are getting Ids of all the Names of the Wimpys *)
@@ -17,25 +17,37 @@ CreateSVGData[routeData_]:= Module[
     ];
     (* Rebuild the XMLs *)
     (* rebuiltXmls = Normal[groupByStyle]/.x_XMLElement :> ExportString[x, "XML"]; *)
-    ;
+    uuid = CreateUUID[];
+    
     gTags = MapThread[
-        XMLElement["g", {"class" -> #1}, With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement, {idsToAttach, paths}],paths]]]&, 
+        XMLElement["g", {"className" -> #1}, With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement[{"id"->#1, "onClick" -> uuid}, #2]&, {idsToAttach, paths}],paths]]]&, 
         {Keys[graphicsToProcess], Normal[groupByStyle][[All,2]]}
     ];
 
+
+
     (* Echo@gTags; *)
 
-    XMLObject[
+    obj=XMLObject[
         "Document"][{XMLObject["Declaration"]["Version" -> "1.0", 
         "Encoding" -> "UTF-8"]}, 
         XMLElement[
         "svg", {"width" -> "216pt", "height" -> "420pt", 
-        "viewBox" -> "0 0 216 420", "version" -> "1.1"}, gTags], {}]
+        "viewBox" -> "0 0 216 420", "version" -> "1.1"}, gTags], {}];
+
+    (* XML exporting doesn't support the ability to have a field value outside of a string, so we force it like so *)
+    fullyBuiltXML = StringReplace[ExportString[obj,"XML"],"'" <> uuid <> "'" -> "{handlePathClick}"];
+
+    (* This could be the worst thing I've ever seen. *)
+    droppedFirstLine = StringJoin[Riffle[Drop[StringSplit[fullyBuiltXML, "\n"], 1], "\n"]]
     (* Thread[Keys[graphicsToProcess] -> rebuiltXmls[[All,2]]] *)
      
 ]
 
-prependElement[id_String, XMLElement[x_, y_, z_]]:= XMLElement[x, Prepend[y, "id" -> id], z]
+(* prependElement[id_String, XMLElement[x_, y_, z_]]:= XMLElement[x, Prepend[y, "id" -> id], z] *)
+
+prependElement[itemsToPrepend_List, XMLElement[x_, y_, z_]]:= XMLElement[x, Fold[Prepend, y, itemsToPrepend], z]
+
 
 seperateGraphics[routeData_]:=Module[
     {},
