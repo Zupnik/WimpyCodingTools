@@ -4,6 +4,7 @@ PackageExport[MakeNutritionalData]
 PackageExport[DeployNutritionalData]
 
 $PDFLocation = "https://wimpy-uk.s3-eu-west-2.amazonaws.com/static/Nutrition%20Guide.pdf";
+(* This is just for me *)
 (* $PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf"; *)
 $NutritionalDataCloudObject = CloudObject["Wimpy/WimpyData/NutritionalData.m"];
 
@@ -14,6 +15,7 @@ MakeNutritionalData[] := Module[
         Print["Error: PDF file does not exist."];
         Failure["PDFFileNotFound", <|"Message" -> "PDF file does not exist."|>];
     ];
+
     unprocessedImport = Import[pdfLoc, "Plaintext"];
     split = StringSplit[unprocessedImport, "\n"];
     pattern = __ ~~ WordCharacter ... ~~ StringExpression @@ Riffle[Table[NumberString, 9], " "];
@@ -34,7 +36,6 @@ MakeNutritionalData[] := Module[
     (* Lazy implementation because I can't be bothered to fix the above Association *)
     processedMenuItems // Values
 ]
-
 
 (* 
     Symbol doesn't actually do anything other than spit out nice looking usage messages 
