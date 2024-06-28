@@ -2,8 +2,11 @@ Package["WimpyCodingTools`"]
 
 PackageExport[CreateSVGData]
 CreateSVGData[routeData_]:= Module[
-    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags},
+    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags,idsToAttach},
     graphicsToProcess = seperateGraphics[routeData];
+
+    (* we are getting Ids of all the Names of the Wimpys *)
+    idsToAttach = routeData["TravelDirections"][[All, "From", "Name"]];
 
     fullGraphicToProcess = Show[Sequence @@ (graphicsToProcess // Values)];
 
@@ -14,11 +17,14 @@ CreateSVGData[routeData_]:= Module[
     ];
     (* Rebuild the XMLs *)
     (* rebuiltXmls = Normal[groupByStyle]/.x_XMLElement :> ExportString[x, "XML"]; *)
-    
+    ;
     gTags = MapThread[
-        XMLElement["g", {"id" -> #1}, #2]&, 
+        XMLElement["g", {"class" -> #1}, With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement, {idsToAttach, paths}],paths]]]&, 
         {Keys[graphicsToProcess], Normal[groupByStyle][[All,2]]}
     ];
+
+    (* Echo@gTags; *)
+
     XMLObject[
         "Document"][{XMLObject["Declaration"]["Version" -> "1.0", 
         "Encoding" -> "UTF-8"]}, 
@@ -29,6 +35,7 @@ CreateSVGData[routeData_]:= Module[
      
 ]
 
+prependElement[id_String, XMLElement[x_, y_, z_]]:= XMLElement[x, Prepend[y, "id" -> id], z]
 
 seperateGraphics[routeData_]:=Module[
     {},
