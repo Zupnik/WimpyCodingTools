@@ -67,6 +67,7 @@ RegisterWimpyDataFormFunction[] := Module[
                 
                 If[
                     image =!= None,
+                    (* TODO: Where is this even being saved?! *)
                     imageSaveLocation = DateString["ISODate"] <> "-" <> wimpy <> ".jpg";
                     (* Resize to something sane and export it and use the reference in the CloudSymbol *)
                     CloudExport[ImageResize[image, {Automatic, 630}], "JPEG", CloudObject[imageSaveLocation]];
