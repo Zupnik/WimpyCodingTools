@@ -20,15 +20,14 @@ CreateSVGData[routeData_]:= Module[
     uuid = CreateUUID[];
     
     gTags = MapThread[
-        XMLElement["g", {"className" -> #1}, With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement[{"id"->#1, "onClick" -> uuid}, #2]&, {idsToAttach, paths}],paths]]]&, 
+        XMLElement["g", 
+            {"className" -> #1}, 
+            With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement[{"id"->#1, "onClick" -> uuid}, #2]&, {idsToAttach, paths}],paths]]
+        ]&, 
         {Keys[graphicsToProcess], Normal[groupByStyle][[All,2]]}
     ];
 
-
-
-    (* Echo@gTags; *)
-
-    obj=XMLObject[
+    obj = XMLObject[
         "Document"][{XMLObject["Declaration"]["Version" -> "1.0", 
         "Encoding" -> "UTF-8"]}, 
         XMLElement[
@@ -48,15 +47,17 @@ CreateSVGData[routeData_]:= Module[
 
 prependElement[itemsToPrepend_List, XMLElement[x_, y_, z_]]:= XMLElement[x, Fold[Prepend, y, itemsToPrepend], z]
 
+(* A simple thing which removes all but 1 point from the GeoPosition lists, needs improvement *)
+simplifyTravelDirections[travel_TravelDirectionsData]:=travel["TravelPath"]/.x_GeoPosition:>GeoPosition[x[[1]][[All,1]]]
 
 seperateGraphics[routeData_]:=Module[
-    {},
+    {travelDirections, allGeoPositions},
     travelDirections = routeData["TravelDirections"][[All, "TravelDirections"]];
     allGeoPositions = routeData["TravelDirections"][[All, "From", "GeoPosition"]];
-
+    (* This is also the drawing order, do not rearrange the Association *)
     <|
         "mapGraphic" -> makeMapGraphic[],
-        "travelDirections" -> makeTravelDiretionsGraphics[travelDirections], 
+        "travelDirections" -> makeTravelDiretionsGraphics[simplifyTravelDirections/@travelDirections], 
         "geoMarker" -> makeGeoMarkerGraphics[allGeoPositions]
     |>
 ]
@@ -74,7 +75,7 @@ makeGeoMarkerGraphics[allGeoPositions_]:=GeoGraphics[
 
  makeTravelDiretionsGraphics[travelDirections_]:=GeoGraphics[
  	{
-  		Style[Line[#], Thick, Black] & /@ (travelDirections)
+  		Style[#, Thick, Black] & /@ (travelDirections)
   		
   	}
  	,
@@ -83,8 +84,7 @@ makeGeoMarkerGraphics[allGeoPositions_]:=GeoGraphics[
 
  makeMapGraphic[]:= mapGraphic=GeoGraphics[
 	{
-		EdgeForm[Black],FaceForm[{Gray,Opacity[1]}],Polygon[Entity["Country","UnitedKingdom"]]
-		
+		EdgeForm[Black],FaceForm[{Gray,Opacity[1]}],Polygon[Entity["Island", "GreatBritain"]]
 	}
 	,
 	GeoBackground->None(*,
