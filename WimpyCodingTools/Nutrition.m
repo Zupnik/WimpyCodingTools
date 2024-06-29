@@ -53,6 +53,7 @@ DeployNutritionalData[] := Module[{file = $NutritionalDataCloudObject},
     If[
         
         FileExistsQ[ file],
+        (* Prevent overwriting unless explictly stated *)
         Message[WimpyCodingTools::coexists, file];
         Failure["CloudObjectExists", <|
             "MessageTemplate" -> 
@@ -61,6 +62,7 @@ DeployNutritionalData[] := Module[{file = $NutritionalDataCloudObject},
                 "co"-> file,
                 "code" -> With[{file =  file}, Hold[DeleteFile[file]]]|>|>]
         ,
+        (* Export to a Package file so it is easy to manually edit in the Cloud *)
         CloudExport[MakeNutritionalData[], {"WL", "Package"}, file];
         UpdateNutritionalDataCloudSymbol[];
         UpdateMenuCloudSymbol[];
