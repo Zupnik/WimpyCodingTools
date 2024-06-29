@@ -96,6 +96,10 @@ TierListGenerator[tiers_List, tierData_List,opts:OptionsPattern[]] := Module[
 	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"], imageSize = OptionValue["ImageSize"], width = OptionValue["Width"]},
 	blankTierList=#->{}&/@tiers;
 	groups = GroupBy[tierData,#Tier&,#[[All,"Image"]]&];
+
+    (* Remove values which are missing. Probably should do something before I get to this point to prevent this, but this works. *)
+    groups = DeleteCases[groups, _Missing, {0, Infinity}];
+
 	orderedTiers = Table[tiers[[i]]->N[(Length[tiers]-i+1)/Length[tiers]],{i,Length[tiers]}];
 	sortedOrderedTiers=KeySort[groups,Lookup[orderedTiers,#]&];
     (* TODO: Only works well with square images. I will need to fix this at some point. *)
