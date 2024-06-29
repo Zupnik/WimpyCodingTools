@@ -88,26 +88,22 @@ PackageExport[TierListGenerator]
 
 Options[TierListGenerator] = {
     (* "Tiers" -> $Tiers *)
-    "Width" -> 15
+    "Width" -> 6,
+    "ImageSize" -> {100,100}
 }
 
-TierListGenerator[tiers_List, tierData:{__Association},opts:OptionsPattern[]] := Module[
-	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"],imageSize={100,100}, width = OptionValue["Width"]},
+TierListGenerator[tiers_List, tierData_List,opts:OptionsPattern[]] := Module[
+	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"], imageSize = OptionValue["ImageSize"], width = OptionValue["Width"]},
 	blankTierList=#->{}&/@tiers;
 	groups = GroupBy[tierData,#Tier&,#[[All,"Image"]]&];
 	orderedTiers = Table[tiers[[i]]->N[(Length[tiers]-i+1)/Length[tiers]],{i,Length[tiers]}];
 	sortedOrderedTiers=KeySort[groups,Lookup[orderedTiers,#]&];
-
-    (* Echo@width; *)
-    (* Echo@orderedTiers; *)
-
-	Global`groups = groups;
+    (* TODO: Only works well with square images. I will need to fix this at some point. *)
 	Grid[
 		Map[{
 			Item[Graphics[Inset[Style[#[[1]], FontSize -> 50, FontColor->White]],ImageSize -> imageSize],Background->ColorData["Rainbow"][Association[orderedTiers][#[[1]]]]],
 			(* TODO: Remove ImageSaliencyCrop as its too slow *)
-            (* Echo@#[[2]]; *)
-            Item[Grid[makeCombinedImage[#[[2]], Echo@OptionValue["Width"]],Spacings->{0,0}],Alignment->Left]
+            Item[Grid[makeCombinedImage[#[[2]], OptionValue["Width"]],Spacings->{0,0}],Alignment->Left]
 			}&,
 		Normal[Association[blankTierList,sortedOrderedTiers]]
 		],
@@ -119,22 +115,26 @@ TierListGenerator[tiers_List, tierData:{__Association},opts:OptionsPattern[]] :=
 	]
 ]
 
-TierListGenerator[tierData:{__Association}, opts:OptionsPattern[]] := TierListGenerator[$Tiers, tierData, opts]
+TierListGenerator[tierData_List, opts:OptionsPattern[]] := TierListGenerator[$Tiers, tierData, opts]
 
 (* TODO: MOVE IMAGESIZE *)
 resizeImage[image_]:=Image[image, ImageSize->{100,100}]
 
 makeCombinedImage[images_,length_]:=Module[
-    {data, resizedImages},
-
-    resizedImages = resizeImage/@images;
-
+    {data, resizedImages, blankImage = Image[{{RGBColor[1, 1, 1, 0]}}, ImageSize -> {100, 100}]},
+    
+    (* If data is empty, I just add a single blank image, which is expanded out later with Partition *)
+    resizedImages = If[
+        (images === List[]),
+        {blankImage},
+        resizeImage/@images
+    ];
     (* 
         Partition the data with the desired length. 
         I've added padding to be a seethrough image of the same size so that you can fix the size of the Grid.
         There's going to be a nicer way to do this, but this works well enough for now.
     *)
-    data = Partition[resizedImages, length, length, 1, Image[{{RGBColor[1, 1, 1, 0]}}, ImageSize -> {100, 100}]];
+    data = Partition[resizedImages, length, length, 1, blankImage];
     data
     (* ImageAssemble[data, Background -> None] *)
 ]
