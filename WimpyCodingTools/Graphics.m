@@ -1,8 +1,9 @@
 Package["WimpyCodingTools`"]
 
+PackageExport[ZupnikXML]
 PackageExport[CreateSVGData]
 CreateSVGData[routeData_]:= Module[
-    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags,idsToAttach, obj, droppedFirstLine, fullyBuiltXML},
+    {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags, idsToAttach, obj, droppedFirstLine, fullyBuiltXML},
     graphicsToProcess = seperateGraphics[routeData];
 
     (* we are getting Ids of all the Names of the Wimpys *)
@@ -17,12 +18,11 @@ CreateSVGData[routeData_]:= Module[
     ];
     (* Rebuild the XMLs *)
     (* rebuiltXmls = Normal[groupByStyle]/.x_XMLElement :> ExportString[x, "XML"]; *)
-    uuid = CreateUUID[];
     
     gTags = MapThread[
         XMLElement["g", 
             {"className" -> #1}, 
-            With[{paths=#2},If[#1==="geoMarker",MapThread[prependElement[{"id"->#1, "onClick" -> uuid}, #2]&, {idsToAttach, paths}],paths]]
+            With[{paths=#2},If[#1==="geoMarker", MapThread[prependElement[{"id"->#1, "onClick" -> ZupnikXML["{handlePathClick}"]}, #2]&, {idsToAttach, Echo@paths}],paths]]
         ]&, 
         {Keys[graphicsToProcess], Normal[groupByStyle][[All,2]]}
     ];
@@ -35,8 +35,9 @@ CreateSVGData[routeData_]:= Module[
         "viewBox" -> "0 0 216 420", "version" -> "1.1"}, gTags], {}];
 
     (* XML exporting doesn't support the ability to have a field value outside of a string, so we force it like so *)
-    fullyBuiltXML = StringReplace[ExportString[obj,"XML"],"'" <> uuid <> "'" -> "{handlePathClick}"];
-
+    (* fullyBuiltXML = StringReplace[ExportString[obj,"XML"],"'" <> uuid <> "'" -> "{handlePathClick}"]; *)
+    (* This probably doesn't work under all conditions, but will do for now *)
+    fullyBuiltXML = StringReplace[ExportString[obj,"XML"],Shortest["'ZupnikXML["~~x__~~"]'"]:>x];
     (* This could be the worst thing I've ever seen. *)
     droppedFirstLine = StringJoin[Riffle[Drop[StringSplit[fullyBuiltXML, "\n"], 1], "\n"]]
     (* Thread[Keys[graphicsToProcess] -> rebuiltXmls[[All,2]]] *)
@@ -52,6 +53,7 @@ simplifyTravelDirections[travel_TravelDirectionsData]:=travel["TravelPath"]/.x_G
 
 seperateGraphics[routeData_]:=Module[
     {travelDirections, allGeoPositions},
+    
     travelDirections = routeData["TravelDirections"][[All, "TravelDirections"]];
     allGeoPositions = routeData["TravelDirections"][[All, "From", "GeoPosition"]];
     (* This is also the drawing order, do not rearrange the Association *)
