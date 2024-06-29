@@ -86,17 +86,28 @@ RegisterWimpyDataFormFunction[] := Module[
 
 PackageExport[TierListGenerator]
 
-TierListGenerator[tiers_List, tierData:{__Association}] := Module[
-	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"],imageSize={100,100}},
+Options[TierListGenerator] = {
+    (* "Tiers" -> $Tiers *)
+    "Width" -> 15
+}
+
+TierListGenerator[tiers_List, tierData:{__Association},opts:OptionsPattern[]] := Module[
+	{blankTierList, groups, orderedTiers,sortedOrderedTiers, colorFunction = ColorData["Rainbow"],imageSize={100,100}, width = OptionValue["Width"]},
 	blankTierList=#->{}&/@tiers;
-	groups=GroupBy[tierData,#Tier&,#[[All,"Image"]]&];
-	orderedTiers=Table[tiers[[i]]->N[(Length[tiers]-i+1)/Length[tiers]],{i,Length[tiers]}];
+	groups = GroupBy[tierData,#Tier&,#[[All,"Image"]]&];
+	orderedTiers = Table[tiers[[i]]->N[(Length[tiers]-i+1)/Length[tiers]],{i,Length[tiers]}];
 	sortedOrderedTiers=KeySort[groups,Lookup[orderedTiers,#]&];
-	
+
+    (* Echo@width; *)
+    (* Echo@orderedTiers; *)
+
+	Global`groups = groups;
 	Grid[
 		Map[{
-			Item[Graphics[Inset[Style[#[[1]],FontSize->50,FontColor->White]],ImageSize->imageSize],Background->ColorData["Rainbow"][Association[orderedTiers][#[[1]]]]],
-			Sequence@@(Item[Image[ResourceFunction["ImageSaliencyCrop"][#],ImageSize->imageSize],ItemSize->Full]&[#]&/@#[[2]])
+			Item[Graphics[Inset[Style[#[[1]], FontSize -> 50, FontColor->White]],ImageSize -> imageSize],Background->ColorData["Rainbow"][Association[orderedTiers][#[[1]]]]],
+			(* TODO: Remove ImageSaliencyCrop as its too slow *)
+            (* Echo@#[[2]]; *)
+            Item[Grid[makeCombinedImage[#[[2]], Echo@OptionValue["Width"]],Spacings->{0,0}],Alignment->Left]
 			}&,
 		Normal[Association[blankTierList,sortedOrderedTiers]]
 		],
@@ -108,6 +119,28 @@ TierListGenerator[tiers_List, tierData:{__Association}] := Module[
 	]
 ]
 
-TierListGenerator[tierData:{__Association}] := TierListGenerator[$Tiers, tierData]
+TierListGenerator[tierData:{__Association}, opts:OptionsPattern[]] := TierListGenerator[$Tiers, tierData, opts]
 
-(* MakeTierListGeneratorImage[]:=1 *)
+(* TODO: MOVE IMAGESIZE *)
+resizeImage[image_]:=Image[image, ImageSize->{100,100}]
+
+makeCombinedImage[images_,length_]:=Module[
+    {data, resizedImages},
+
+    resizedImages = resizeImage/@images;
+
+    (* 
+        Partition the data with the desired length. 
+        I've added padding to be a seethrough image of the same size so that you can fix the size of the Grid.
+        There's going to be a nicer way to do this, but this works well enough for now.
+    *)
+    data = Partition[resizedImages, length, length, 1, Image[{{RGBColor[1, 1, 1, 0]}}, ImageSize -> {100, 100}]];
+    data
+    (* ImageAssemble[data, Background -> None] *)
+]
+
+PackageExport[MakeTierListGeneratorImage]
+
+MakeTierListGeneratorImage[]:=1
+
+
