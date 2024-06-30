@@ -3,7 +3,7 @@ Package["WimpyCodingTools`"]
 PackageScope[$WimpyTourWebsiteLocation]
 PackageScope[$WimpyTourTestWebsiteLocation]
 PackageScope[$WimpyTourDeploymentLocation]
-PackageScope[$WimpyVisitGraphic]
+PackageScope[$MakeWimpyVisitData]
 PackageScope[$WimpyTourInformation]
 PackageScope[$NutritionalDataCloudObject]
 PackageScope[$NutritionalDataCloudSymbol]
@@ -28,7 +28,7 @@ $WimpyTourDeploymentLocation := If[$DeployTest, $WimpyTourTestWebsiteLocation, $
 (* Graphics/Data *)
 
 
-$WimpyVisitGraphic = CloudObject["Wimpy/Deployments/WimpyVisitGraphic.svg"]
+$MakeWimpyVisitData = CloudObject["Wimpy/Deployments/MakeWimpyVisitData.svg"]
 (* $WimpyTourInformation = CloudObject["Wimpy/Deployments/WimpyTourInformation.json"] *)
 $WimpyTourInformation = CloudObject[$WimpyTourDeploymentLocation<>"/Data/WimpyTourInformation.json"]
 $WimpyTierListLocation = CloudObject["Wimpy/Deployments/WimpyTierList.png"]
@@ -50,5 +50,5 @@ $ImageSaveLocation = "Wimpy/WimpyData/Images/"
 
 (*
     CloudSymbol[$TourDataSymbol] = {}
-    WimpyVisitGraphic[]
+    MakeWimpyVisitData[]
 *)

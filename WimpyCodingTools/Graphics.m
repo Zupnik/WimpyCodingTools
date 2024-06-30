@@ -103,16 +103,16 @@ DeployStaticWimpyData[]:= CloudSymbol["Wimpy/StaticWimpyData"] = $WimpyData(* [[
 PackageExport[DeployStaticWimpyVisitData]
 DeployStaticWimpyVisitData[]:= CloudSymbol["Wimpy/StaticWimpyVisitData"] = $WimpyVisitData
 
-PackageExport[WimpyVisitGraphic]
+PackageExport[MakeWimpyVisitData]
 (* What if $WimpyData on Cloud doesn't match the desktop version? *)
 
-Options[WimpyVisitGraphic] = {
+Options[MakeWimpyVisitData] = {
    "WimpyTourInformationLocation" -> $WimpyTourInformation,
-   "WimpyVisitGraphicLocation" -> $WimpyVisitGraphic,
+   "MakeWimpyVisitDataLocation" -> $MakeWimpyVisitData,
    "Deploy" -> True
 }
 
-WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
+MakeWimpyVisitData[opts:OptionsPattern[]] := Module[
     {visitedWimpyNames, unvisitedWimpy, assoc, nextWimpy, totalWimpysVisited, geoGraphic, wimpyJsonData},
     (* Data should be submitted in order *)
     visitedWimpyNames = Union[CloudSymbol[$TourDataSymbol][[All,"Name"]]];
@@ -153,7 +153,7 @@ WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
     If[
         OptionValue["Deploy"] === True,
         Echo@"Deploying Wimpy Visit Graphic and Wimpy Tour Information to the Cloud...";
-        Echo@CloudExport[geoGraphic, "SVG", OptionValue["WimpyVisitGraphicLocation"], Permissions -> "Public"];
+        Echo@CloudExport[geoGraphic, "SVG", OptionValue["MakeWimpyVisitDataLocation"], Permissions -> "Public"];
         Echo@CloudExport[wimpyJsonData, "JSON", OptionValue["WimpyTourInformationLocation"], Permissions -> "Public"];
     ];
    

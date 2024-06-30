@@ -85,7 +85,7 @@ DeployWimpyDataFormFunction[] := Module[
                 CloudExport[TierListGenerator[justTierData], "PNG", $WimpyTierListLocation, Permissions -> "Public"];
                 (* Update the json *)
                 (* CloudExport[newData, "JSON", $TourDataSymbol, Permissions -> "Public"]; *)
-                WimpyVisitGraphic[];
+                MakeWimpyVisitData[];
                 (* Return the data *)
                 HTTPRedirect[$WimpyTierListLocation]
             ]&
