@@ -22,7 +22,7 @@ CreateSVGData[routeData_]:= Module[
     gTags = MapThread[
         XMLElement["g", 
             {"className" -> #1}, 
-            With[{paths=#2},If[#1==="geoMarker", MapThread[prependElement[{"id"->#1, "onClick" -> ZupnikXML["{handlePathClick}"]}, #2]&, {idsToAttach, Echo@paths}],paths]]
+            With[{paths=#2},If[#1==="geoMarker", MapThread[prependElement[{"id"->#1, "onClick" -> ZupnikXML["{handlePathClick}"]}, #2]&, {idsToAttach, paths}],paths]]
         ]&, 
         {Keys[graphicsToProcess], Normal[groupByStyle][[All,2]]}
     ];
@@ -94,3 +94,32 @@ makeGeoMarkerGraphics[allGeoPositions_]:=GeoGraphics[
 	GeoCenter\[Rule]London	city*)
 	
 ]
+
+PackageExport[DeployStaticWimpyData]
+DeployStaticWimpyData[]:= CloudSymbol["Wimpy/StaticWimpyData"] = $WimpyData[[All, {"Id", "Name", "GeoPosition"}]]
+PackageExport[DeployStaticWimpyVisitData]
+DeployStaticWimpyVisitData[]:= CloudSymbol["Wimpy/StaticWimpyVisitData"] = $WimpyVisitData
+
+
+
+
+PackageExport[WimpyVisitGraphic]
+(* What if $WimpyData on Cloud doesn't match the desktop version? *)
+WimpyVisitGraphic[] := $WimpyData
+
+
+$GoogleDocsLocation = "https://docs.google.com/spreadsheets/d/1nBUcEOt8D0wVAHxBXTs9D70N6K1GL-7wXw82-UAUsss/export?format=csv";
+
+ImportGoogleDocs[url_String]:=Module[
+    {},
+    csv = Import[url, "CSV", CharacterEncoding -> "UTF8"];
+    Dataset[Map[Association[Thread[First[csv] -> #]] &, Rest[csv]]]
+]
+
+
+PackageExport[$WimpyVisitData]
+GeneralUtilities`SetUsage["$WimpyVisitData returns a dataset of the Wimpy locations in visit order taken from my Google Docs."]
+
+$WimpyVisitData := ImportGoogleDocs[$GoogleDocsLocation]
+
+(* Reading in google docs*)

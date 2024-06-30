@@ -3,38 +3,50 @@ Package["WimpyCodingTools`"]
 PackageExport[MakeNutritionalData]
 PackageExport[DeployNutritionalData]
 
-$PDFLocation = "https://wimpy-uk.s3-eu-west-2.amazonaws.com/static/Nutrition%20Guide.pdf";
+(* $PDFLocation = "https://wimpy-uk.s3-eu-west-2.amazonaws.com/static/Nutrition%20Guide.pdf"; *)
 (* This is just for me *)
-(* $PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf"; *)
+$PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf";
+PackageExport[$NutritionalDataCloudObject]
 $NutritionalDataCloudObject = CloudObject["Wimpy/WimpyData/NutritionalData.m"];
+
+$MenuDataCloudSymbol = "Wimpy/$MenuData"
+
+PackageScope[$NutritionalDataCloudSymbol]
+$NutritionalDataCloudSymbol = "Wimpy/$NutritionalData"
 
 MakeNutritionalData[] := Module[
     {nutritionalData, unprocessedImport, pdfLoc, split, pattern, unprocessedMenuItems, processedMenuItems},
     pdfLoc = $PDFLocation;
+(* 
     If[!FileExistsQ[$PDFLocation],
         Print["Error: PDF file does not exist."];
         Failure["PDFFileNotFound", <|"Message" -> "PDF file does not exist."|>];
-    ];
+    ]; *)
 
     unprocessedImport = Import[pdfLoc, "Plaintext"];
     split = StringSplit[unprocessedImport, "\n"];
     pattern = __ ~~ WordCharacter ... ~~ StringExpression @@ Riffle[Table[NumberString, 9], " "];
     unprocessedMenuItems = Select[split, StringContainsQ[pattern]];
-    processedMenuItems = Association @@ StringCases[name__ ~~ WordCharacter
-        ... ~~ " " ~~ energy:NumberString ~~ " " ~~ energyKcal:NumberString ~~
-        " " ~~ fat:NumberString ~~ " " ~~ sats:NumberString ~~ " " ~~ carbs:
-        NumberString ~~ " " ~~ sugars:NumberString ~~ " " ~~ fibre:NumberString
-        ~~ " " ~~ prot:NumberString ~~ " " ~~ salt:NumberString :> StringReplace[
-        name, "\[Dash] " -> ""] -> <|"Name" -> StringReplace[name, "\[Dash] "
-        -> ""], "Calories" -> Quantity[energyKcal // ToExpression, "DietaryCalories"
-        ], "Fat" -> Quantity[fat // ToExpression, "Grams"], "Saturates" -> Quantity[
-        sats // ToExpression, "Grams"], "Sugars" -> Quantity[sugars // ToExpression,
-        "Grams"], "Carbohydrates" -> Quantity[carbs // ToExpression, "Grams"
-        ], "Fibre" -> Quantity[fibre // ToExpression, "Grams"], "Protein" -> 
-        Quantity[prot // ToExpression, "Grams"], "Salt" -> Quantity[salt // ToExpression,
-        "Grams"]|>][unprocessedMenuItems];
+    processedMenuItems = Dataset[Association @@ 
+        StringCases[
+            name__ ~~ WordCharacter ... ~~ " " ~~ energy : NumberString ~~ 
+            " " ~~ energyKcal : NumberString ~~ " " ~~ fat : NumberString ~~
+            " " ~~ sats : NumberString ~~ " " ~~ carbs : NumberString ~~ 
+            " " ~~ sugars : NumberString ~~ " " ~~ fibre : NumberString ~~ 
+            " " ~~ prot : NumberString ~~ " " ~~ salt : NumberString :> 
+            StringReplace[name, "\[Dash] " -> ""] -> <|
+            "Calories" -> 
+                Quantity[energyKcal // ToExpression, "DietaryCalories"], 
+            "Fat" -> Quantity[fat // ToExpression, "Grams"], 
+            "Saturates" -> Quantity[sats // ToExpression, "Grams"], 
+            "Sugars" -> Quantity[sugars // ToExpression, "Grams"], 
+            "Carbohydrates" -> Quantity[carbs // ToExpression, "Grams"], 
+            "Fibre" -> Quantity[fibre // ToExpression, "Grams"], 
+            "Protein" -> Quantity[prot // ToExpression, "Grams"], 
+            "Salt" -> Quantity[salt // ToExpression, "Grams"]|>][
+        unprocessedMenuItems]];
     (* Lazy implementation because I can't be bothered to fix the above Association *)
-    processedMenuItems // Values
+    processedMenuItems
 ]
 
 (* 
@@ -71,12 +83,13 @@ DeployNutritionalData[] := Module[{file = $NutritionalDataCloudObject},
 
 PackageExport[UpdateNutritionalDataCloudSymbol]
 
-UpdateNutritionalDataCloudSymbol[] := (CloudSymbol["Wimpy/$NutritionalData"] = Import[$NutritionalDataCloudObject])
+(* TODO: Why do I do this? Seems like a waste of time. *)
+UpdateNutritionalDataCloudSymbol[] := (CloudSymbol[$NutritionalDataCloudSymbol] = Import[$NutritionalDataCloudObject])
 
 PackageExport[UpdateMenuCloudSymbol]
 
 (* Not we need the $Menu Symbol *)
-UpdateMenuCloudSymbol[]:= CloudSymbol["Wimpy/$Menu"] = CloudSymbol["Wimpy/$NutritionalData"][[All, "Name"]]
+UpdateMenuCloudSymbol[]:= CloudSymbol[$MenuDataCloudSymbol] = CloudSymbol[$NutritionalDataCloudSymbol][[All, "Name"]]
 
 PackageExport[ForceUpdateMenuAndNutritionalCloudSymbols]
 ForceUpdateMenuAndNutritionalCloudSymbols[]:=(UpdateNutritionalDataCloudSymbol[];UpdateMenuCloudSymbol[])

@@ -289,7 +289,7 @@ makeGeoMarker[wimpy_] := Tooltip[GeoMarker[wimpy["GeoPosition"], Graphics[{RGBCo
 makeTravelLine[travelDirections_] := Style[Line[travelDirections], Thick, Black]
 
 RouteGrid[routeData_]:= Module[
-	{},
+	{},	
 	data = ParallelMap[
 			{
 				"OpeningTimesFrom" -> StyleWimpyData[#["From"]],
@@ -323,4 +323,20 @@ PackageExport[DeployWimpyCodingTools]
 $PacletDeploymentDirectory = CloudObject["Wimpy/WimpyCodingTools"]
 $PacletDirectory = FileNameDrop[$InputFileName]
 
-DeployWimpyCodingTools[] := CopyDirectory[$PacletDirectory, $PacletDeploymentDirectory]
+Options[DeployWimpyCodingTools] := {OverwriteTarget -> False}
+(*TODO: Fix Overwrite *)
+DeployWimpyCodingTools[opts:OptionsPattern[]] := Module[
+	{},
+	If[
+		DirectoryQ[$PacletDeploymentDirectory] && OptionValue[OverwriteTarget] === True,
+		DeleteDirectory[$PacletDeploymentDirectory, DeleteContents -> True]
+	];
+
+	CopyDirectory[$PacletDirectory, $PacletDeploymentDirectory]
+
+]
+	
+
+(* DeleteDirectory[CloudObject[
+ "https://www.wolframcloud.com/obj/az/Wimpy/WimpyCodingTools"], 
+ DeleteContents -> True] *)
