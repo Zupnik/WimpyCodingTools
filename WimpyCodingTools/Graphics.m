@@ -3,9 +3,6 @@ Package["WimpyCodingTools`"]
 PackageExport[ZupnikXML]
 PackageExport[CreateSVGData]
 
-$WimpyVisitGraphic = CloudObject["Wimpy/Deployments/WimpyVisitGraphic.svg"]
-
-
 CreateSVGData[routeData_]:= Module[
     {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags, idsToAttach, obj, droppedFirstLine, fullyBuiltXML},
     graphicsToProcess = seperateGraphics[routeData];
@@ -108,7 +105,13 @@ DeployStaticWimpyVisitData[]:= CloudSymbol["Wimpy/StaticWimpyVisitData"] = $Wimp
 
 PackageExport[WimpyVisitGraphic]
 (* What if $WimpyData on Cloud doesn't match the desktop version? *)
-WimpyVisitGraphic[] := Module[
+
+Options[WimpyVisitGraphic] = {
+   "WimpyTourInformationLocation" -> $WimpyTourInformation,
+   "WimpyVisitGraphicLocation" -> $WimpyVisitGraphic
+}
+
+WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
     {visitedWimpyNames, unvisitedWimpy, assoc, nextWimpy, totalWimpysVisited, geoGraphic, wimpyJsonData},
     (* Data should be submitted in order *)
     visitedWimpyNames = Union[CloudSymbol[$TourDataSymbol][[All,"Name"]]];
@@ -116,7 +119,7 @@ WimpyVisitGraphic[] := Module[
     assoc = <|"Visited" -> visitedWimpyNames,"Unvisited" -> unvisitedWimpy|>;
     nextWimpy = First[Query[Select[MemberQ[#Name][assoc["Unvisited"]] &]]@$WimpyVisitData]["Name"];
 
-    finalAssoc = Echo@<|"Visited" -> visitedWimpyNames, "Unvisited" -> DeleteCases[unvisitedWimpy,nextWimpy],"NextWimpy"->{Echo@nextWimpy}|>;
+    finalAssoc = Echo@<|"Visited" -> Normal[visitedWimpyNames], "Unvisited" -> Normal[DeleteCases[unvisitedWimpy,nextWimpy]],"NextWimpy"->{Echo@nextWimpy}|>;
 
     totalWimpysVisited = Length[finalAssoc["Visited"]];
 
@@ -137,7 +140,7 @@ WimpyVisitGraphic[] := Module[
     (* Map[GetWimpyByName, assoc, {2}] *)
 
     (* GetWimpyByName[visitedWimpyNames[[1]]] *)
-    Echo@CloudExport[geoGraphic, "SVG", $WimpyVisitGraphic, Permissions -> "Public"];
+    Echo@CloudExport[geoGraphic, "SVG", OptionValue["WimpyVisitGraphicLocation"], Permissions -> "Public"];
 
     wimpyJsonData = Join[finalAssoc,
         <|
@@ -147,7 +150,7 @@ WimpyVisitGraphic[] := Module[
         |>
     ];
 
-    Echo@CloudExport[wimpyJsonData, "JSON", "Wimpy/Deployments/WimpyTourInformation.json", Permissions -> "Public"];
+    Echo@CloudExport[wimpyJsonData, "JSON", OptionValue["WimpyTourInformationLocation"], Permissions -> "Public"];
 
 
     geoGraphic

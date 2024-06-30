@@ -7,23 +7,15 @@ $allWimpyNames := $WimpyData[[All, "Name"]]
 (* CONSIDER: should the Dataset be higher up?! *)
 $allWimpyNutritionalData := Dataset[CloudSymbol[$NutritionalDataCloudSymbol]]
 
-$WimpyDataFormCloudObject = CloudObject["Wimpy/Deployments/WimpyVisitForm"]
-$WimpyNutritionalFormCloudObject = CloudObject["Wimpy/Deployments/WimpyNutritionalForm"]
-
-PackageExport[$WimpyTierListLocation]
-$WimpyTierListLocation = CloudObject["Wimpy/Deployments/WimpyTierList.png"]
-
 (* This gets wrapper with CloudSymbol later *)
-PackageExport[$TourDataSymbol]
-$TourDataSymbol = "Wimpy/WimpyTourData"
 
-PackageExport[RegisterWimpyNutritionFormFunction]
+PackageExport[DeployWimpyNutritionFormFunction]
 
-Options[RegisterWimpyNutritionFormFunction] = {
+Options[DeployWimpyNutritionFormFunction] = {
     IncludeDefinitions -> True
 }
 
-RegisterWimpyNutritionFormFunction[opts:OptionsPattern[]] := Module[
+DeployWimpyNutritionFormFunction[opts:OptionsPattern[]] := Module[
     {menuItems = $allWimpyMenuItems},
     (* TODO: Add Failure check*)
     CloudDeploy[
@@ -45,9 +37,9 @@ RegisterWimpyNutritionFormFunction[opts:OptionsPattern[]] := Module[
     ]
 ]
 
-PackageExport[RegisterWimpyDataFormFunction]
+PackageExport[DeployWimpyDataFormFunction]
 
-RegisterWimpyDataFormFunction[] := Module[
+DeployWimpyDataFormFunction[] := Module[
     {allWimpyNames, allWimpyMenuItems},
 
     allWimpyNames = $allWimpyNames;
@@ -56,7 +48,7 @@ RegisterWimpyDataFormFunction[] := Module[
     CloudDeploy[
         FormFunction[
             {
-                "Date"-><|"Input" -> DateString[Today], "Interpreter"->"Date"|>,
+                "Date" -> <|"Input" -> DateString[Today], "Interpreter"->"Date"|>,
                 "Name" -> allWimpyNames,
                 "FoodItems" -> RepeatingElement[allWimpyMenuItems,{1,Infinity}],
                 "Tier" -> $Tiers,
@@ -77,7 +69,7 @@ RegisterWimpyDataFormFunction[] := Module[
                 If[
                     image =!= None,
                     (* TODO: Where is this even being saved?! *)
-                    imageSaveLocation = DateString["ISODate"] <> "-" <> wimpy <> "-" <>CreateUUID[] <>".jpg";
+                    imageSaveLocation = $ImageSaveLocation<>DateString["ISODate"] <> "-" <> wimpy <> "-111" <>CreateUUID[] <>".jpg";
                     (* Resize to something sane and export it and use the reference in the CloudSymbol *)
                     CloudExport[ImageResize[image, {Automatic, 630}], "JPEG", CloudObject[imageSaveLocation]];
                     
@@ -88,7 +80,13 @@ RegisterWimpyDataFormFunction[] := Module[
 
                 justTierData = Query[All, <|"Tier" -> #Tier, If[Head[#Image] === CloudObject, "Image" -> Import[#Image], Nothing]|> &][newData];
                 (* ExportForm[Rasterize@TierListGenerator[justTierData],"PNG"] *)
+                (* Export the tier list generator *)
+                (* TODO: DeleteBackground*)
                 CloudExport[TierListGenerator[justTierData], "PNG", $WimpyTierListLocation, Permissions -> "Public"];
+                (* Update the json *)
+                (* CloudExport[newData, "JSON", $TourDataSymbol, Permissions -> "Public"]; *)
+                WimpyVisitGraphic[];
+                (* Return the data *)
                 HTTPRedirect[$WimpyTierListLocation]
             ]&
         ],
@@ -187,8 +185,8 @@ DeployEverything[] := Module[
     Echo@DeployWimpyCodingTools[OverwriteTarget -> True];
     Echo@(DeployStaticWimpyData[][[1;;2]]);
     Echo@DeployStaticWimpyVisitData[];
-    Echo@RegisterWimpyDataFormFunction[];
-    Echo@RegisterWimpyNutritionFormFunction[];
+    Echo@DeployWimpyDataFormFunction[];
+    Echo@DeployWimpyNutritionFormFunction[];
 ]
 
 abortAll[]:=FrontEndTokenExecute["EvaluatorAbort"];

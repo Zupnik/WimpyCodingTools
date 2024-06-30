@@ -6,13 +6,8 @@ PackageExport[DeployNutritionalData]
 (* $PDFLocation = "https://wimpy-uk.s3-eu-west-2.amazonaws.com/static/Nutrition%20Guide.pdf"; *)
 (* This is just for me *)
 $PDFLocation = "/Users/anthonyz/Dropbox/projects/Wimpy2024/Coding/Food/WimpyNutritionalGuide.pdf";
-PackageExport[$NutritionalDataCloudObject]
-$NutritionalDataCloudObject = CloudObject["Wimpy/WimpyData/NutritionalData.m"];
 
 $MenuDataCloudSymbol = "Wimpy/$MenuData"
-
-PackageScope[$NutritionalDataCloudSymbol]
-$NutritionalDataCloudSymbol = "Wimpy/$NutritionalData"
 
 MakeNutritionalData[] := Module[
     {nutritionalData, unprocessedImport, pdfLoc, split, pattern, unprocessedMenuItems, processedMenuItems},
