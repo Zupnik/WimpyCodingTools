@@ -2,6 +2,10 @@ Package["WimpyCodingTools`"]
 
 PackageExport[ZupnikXML]
 PackageExport[CreateSVGData]
+
+$WimpyVisitGraphic = CloudObject["Wimpy/Deployments/WimpyVisitGraphic.svg"]
+
+
 CreateSVGData[routeData_]:= Module[
     {fullGraphicToProcess, graphicsToProcess, groupByStyle, rebuiltXmls, gTags, idsToAttach, obj, droppedFirstLine, fullyBuiltXML},
     graphicsToProcess = seperateGraphics[routeData];
@@ -95,17 +99,66 @@ makeGeoMarkerGraphics[allGeoPositions_]:=GeoGraphics[
 	
 ]
 
+(* We need to make some static data because the data at CloudSymbol["Wimpy/$WimpyData"] is subject to change in the future *)
 PackageExport[DeployStaticWimpyData]
-DeployStaticWimpyData[]:= CloudSymbol["Wimpy/StaticWimpyData"] = $WimpyData[[All, {"Id", "Name", "GeoPosition"}]]
+DeployStaticWimpyData[]:= CloudSymbol["Wimpy/StaticWimpyData"] = $WimpyData(* [[All, {"Id", "Name", "GeoPosition"}]] *)
+(* Not sure I need static Wimpy Data, the spreadsheet shouldn't change after the tour *)
 PackageExport[DeployStaticWimpyVisitData]
 DeployStaticWimpyVisitData[]:= CloudSymbol["Wimpy/StaticWimpyVisitData"] = $WimpyVisitData
 
-
-
-
 PackageExport[WimpyVisitGraphic]
 (* What if $WimpyData on Cloud doesn't match the desktop version? *)
-WimpyVisitGraphic[] := $WimpyData
+WimpyVisitGraphic[] := Module[
+    {visitedWimpyNames, unvisitedWimpy, assoc, nextWimpy, totalWimpysVisited, geoGraphic, wimpyJsonData},
+    (* Data should be submitted in order *)
+    visitedWimpyNames = Union[CloudSymbol[$TourDataSymbol][[All,"Name"]]];
+    unvisitedWimpy = Complement[$WimpyVisitData[[All,"Name"]], visitedWimpyNames];
+    assoc = <|"Visited" -> visitedWimpyNames,"Unvisited" -> unvisitedWimpy|>;
+    nextWimpy = First[Query[Select[MemberQ[#Name][assoc["Unvisited"]] &]]@$WimpyVisitData]["Name"];
+
+    finalAssoc = Echo@<|"Visited" -> visitedWimpyNames, "Unvisited" -> DeleteCases[unvisitedWimpy,nextWimpy],"NextWimpy"->{Echo@nextWimpy}|>;
+
+    totalWimpysVisited = Length[finalAssoc["Visited"]];
+
+    geoGraphic = GeoGraphics[
+        {
+		    GeoStyling[None],EdgeForm[Black],FaceForm[{$countryColor,Opacity[1]}],Polygon[Entity["Island", "GreatBritain"]],
+            {GeoStyling[None],GeoMarker[GetWimpyByName[#]["GeoPosition"], Graphics[{$visitedColor, Disk[]}], "Scale" -> Scaled[0.02]]}&/@Normal[finalAssoc["Visited"]],
+            {(GeoMarker[GetWimpyByName[#]["GeoPosition"], Graphics[{$unvisitedColor, Disk[]}], "Scale" -> Scaled[0.02]])}&/@Normal[finalAssoc["Unvisited"]],
+            ({GeoMarker[GetWimpyByName[#]["GeoPosition"], Graphics[{$nextWimpyColor, Disk[]}], "Scale" -> Scaled[0.05]]})&/@Normal[finalAssoc["NextWimpy"]]
+            (* Legend looks quite different on Cloud so can't use it *)
+            (* ,
+            Inset[Magnify[SwatchLegend[{$nextWimpyColor, $visitedColor, $unvisitedColor}, {"Next Wimpy", "Visited Wimpys", "UnvistedWimpys"}],2],Offset[{-20, -20}, Scaled[{1, 1}]], {Right, Top}] *)
+        },
+        GeoBackground->None,
+        ImageSize->{800}
+
+    ];
+    (* Map[GetWimpyByName, assoc, {2}] *)
+
+    (* GetWimpyByName[visitedWimpyNames[[1]]] *)
+    Echo@CloudExport[geoGraphic, "SVG", $WimpyVisitGraphic, Permissions -> "Public"];
+
+    wimpyJsonData = Join[finalAssoc,
+        <|
+            "TotalVisited" -> totalWimpysVisited, 
+            "WimpysLeft" -> Length[$WimpyVisitData] - totalWimpysVisited,
+            "TotalWimpys" -> Length[$WimpyVisitData]
+        |>
+    ];
+
+    Echo@CloudExport[wimpyJsonData, "JSON", "Wimpy/Deployments/WimpyTourInformation.json", Permissions -> "Public"];
+
+
+    geoGraphic
+]
+
+$nextWimpyColor = RGBColor[1, 0, 0];
+$unvisitedColor = RGBColor[0.462745, 0.529412, 0.596078];
+$visitedColor = RGBColor["#a99663"];
+$countryColor = RGBColor["#ffcc47"];
+
+(* $WimpyData[[All,{"Id","Name","GeoPosition"}]]  *)
 
 
 $GoogleDocsLocation = "https://docs.google.com/spreadsheets/d/1nBUcEOt8D0wVAHxBXTs9D70N6K1GL-7wXw82-UAUsss/export?format=csv";
@@ -116,10 +169,8 @@ ImportGoogleDocs[url_String]:=Module[
     Dataset[Map[Association[Thread[First[csv] -> #]] &, Rest[csv]]]
 ]
 
-
 PackageExport[$WimpyVisitData]
 GeneralUtilities`SetUsage["$WimpyVisitData returns a dataset of the Wimpy locations in visit order taken from my Google Docs."]
 
 $WimpyVisitData := ImportGoogleDocs[$GoogleDocsLocation]
 
-(* Reading in google docs*)

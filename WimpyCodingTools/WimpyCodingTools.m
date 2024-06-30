@@ -187,15 +187,27 @@ RouteData[x_]["Properties"] := x // Keys
 RouteData[x_][y_] := x[y]
 
 
-Options[GetWimpyById] := {"WimpyData" :> $WimpyData}
+Options[GetWimpyById] = Options[GetWimpyByName] = {"WimpyData" :> $WimpyData}
 
 GetWimpyById[id_, opts:OptionsPattern[]]:= Module[
 	{wimpyData = OptionValue["WimpyData"], cases},
+	(*CONSIDER: Switching to Select like below *)
 	cases = Cases[wimpyData, x_Association /; x["Id"] === id];
 	(* *)
 	If[cases==={}, Return[Missing[]]];
 	(* Id should be unique and result should either be {} or a single value in a list *)
 	cases[[1]]
+]
+
+
+PackageExport[GetWimpyByName]
+GetWimpyByName[name_, opts:OptionsPattern[]]:= Module[
+	{wimpyData = OptionValue["WimpyData"], cases},
+	cases = Select[wimpyData, #Name === name &][[1]];
+	(* *)
+	If[cases==={}, Return[Missing[]]];
+	(* Hellishly lazy *)
+	GetWimpyById[cases[[1]]]
 ]
 
 PackageExport[GetGeoData]
@@ -333,7 +345,6 @@ DeployWimpyCodingTools[opts:OptionsPattern[]] := Module[
 	];
 
 	CopyDirectory[$PacletDirectory, $PacletDeploymentDirectory]
-
 ]
 	
 

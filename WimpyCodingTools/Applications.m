@@ -14,10 +14,10 @@ PackageExport[$WimpyTierListLocation]
 $WimpyTierListLocation = CloudObject["Wimpy/Deployments/WimpyTierList.png"]
 
 (* This gets wrapper with CloudSymbol later *)
+PackageExport[$TourDataSymbol]
 $TourDataSymbol = "Wimpy/WimpyTourData"
 
 PackageExport[RegisterWimpyNutritionFormFunction]
-
 
 Options[RegisterWimpyNutritionFormFunction] = {
     IncludeDefinitions -> True
@@ -57,17 +57,17 @@ RegisterWimpyDataFormFunction[] := Module[
         FormFunction[
             {
                 "Date"-><|"Input" -> DateString[Today], "Interpreter"->"Date"|>,
-                "Wimpy" -> allWimpyNames,
+                "Name" -> allWimpyNames,
                 "FoodItems" -> RepeatingElement[allWimpyMenuItems,{1,Infinity}],
                 "Tier" -> $Tiers,
                 "Image"-> "Image" -> None,
-                "Notes" -> "String"->None
+                "Notes" -> "String" -> None
                 (* CONSIDER: Having a way to remove items*)
                 (* ,
                 "RemovedItems" -> RepeatingElement[allWimpyMenuItems,{0,Infinity}] *)
             },
             Module[
-                {data = #, image = #Image, imageSaveLocation, wimpy = #Wimpy, newData, justTierData},
+                {data = #, image = #Image, imageSaveLocation, wimpy = #Name, newData, justTierData},
                 
                 If[
                     FailureQ[CloudSymbol[$TourDataSymbol]],
@@ -185,7 +185,7 @@ DeployEverything[] := Module[
     yesNoInput["You are about to overwrite a lot of stuff on the Cloud\nDo you want to continue?", Echo@"Deploying everything", abortAll[]];
     
     Echo@DeployWimpyCodingTools[OverwriteTarget -> True];
-    Echo@DeployStaticWimpyData[];
+    Echo@(DeployStaticWimpyData[][[1;;2]]);
     Echo@DeployStaticWimpyVisitData[];
     Echo@RegisterWimpyDataFormFunction[];
     Echo@RegisterWimpyNutritionFormFunction[];
