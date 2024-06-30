@@ -108,7 +108,8 @@ PackageExport[WimpyVisitGraphic]
 
 Options[WimpyVisitGraphic] = {
    "WimpyTourInformationLocation" -> $WimpyTourInformation,
-   "WimpyVisitGraphicLocation" -> $WimpyVisitGraphic
+   "WimpyVisitGraphicLocation" -> $WimpyVisitGraphic,
+   "Deploy" -> True
 }
 
 WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
@@ -140,7 +141,6 @@ WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
     (* Map[GetWimpyByName, assoc, {2}] *)
 
     (* GetWimpyByName[visitedWimpyNames[[1]]] *)
-    Echo@CloudExport[geoGraphic, "SVG", OptionValue["WimpyVisitGraphicLocation"], Permissions -> "Public"];
 
     wimpyJsonData = Join[finalAssoc,
         <|
@@ -150,10 +150,14 @@ WimpyVisitGraphic[opts:OptionsPattern[]] := Module[
         |>
     ];
 
-    Echo@CloudExport[wimpyJsonData, "JSON", OptionValue["WimpyTourInformationLocation"], Permissions -> "Public"];
-
-
-    geoGraphic
+    If[
+        OptionValue["Deploy"] === True,
+        Echo@"Deploying Wimpy Visit Graphic and Wimpy Tour Information to the Cloud...";
+        Echo@CloudExport[geoGraphic, "SVG", OptionValue["WimpyVisitGraphicLocation"], Permissions -> "Public"];
+        Echo@CloudExport[wimpyJsonData, "JSON", OptionValue["WimpyTourInformationLocation"], Permissions -> "Public"];
+    ];
+   
+    <|"GeoGraphic"->geoGraphic,"Data"->wimpyJsonData|>
 ]
 
 $nextWimpyColor = RGBColor[1, 0, 0];
